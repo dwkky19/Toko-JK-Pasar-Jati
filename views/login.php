@@ -23,6 +23,7 @@
         <?php endif; ?>
 
         <form method="POST" action="<?= APP_URL ?>/index.php?page=login">
+            <?= csrfField() ?>
             <div class="form-group">
                 <label class="form-label">Username</label>
                 <input type="text" name="username" class="form-input" placeholder="Masukkan username" required autofocus>

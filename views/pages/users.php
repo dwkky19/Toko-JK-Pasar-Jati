@@ -31,6 +31,7 @@ $users = $db->query("SELECT * FROM users ORDER BY created_at DESC")->fetchAll();
                     <button class="btn btn-ghost btn-sm" onclick="editUser(<?= htmlspecialchars(json_encode($u)) ?>)">✏️</button>
                     <?php if ($u['id'] !== $_SESSION['user_id']): ?>
                     <form method="POST" action="<?= APP_URL ?>/index.php?page=users&action=delete" onsubmit="return confirm('Yakin hapus pengguna ini?')">
+                        <?= csrfField() ?>
                         <input type="hidden" name="id" value="<?= $u['id'] ?>">
                         <button type="submit" class="btn btn-danger btn-sm">🗑️</button>
                     </form>
@@ -51,6 +52,7 @@ $users = $db->query("SELECT * FROM users ORDER BY created_at DESC")->fetchAll();
             <button class="modal-close" onclick="closeUserModal()">✕</button>
         </div>
         <form method="POST" action="<?= APP_URL ?>/index.php?page=users&action=save">
+            <?= csrfField() ?>
             <input type="hidden" name="id" id="userId" value="">
             <div class="form-group">
                 <label class="form-label">Nama Lengkap *</label>

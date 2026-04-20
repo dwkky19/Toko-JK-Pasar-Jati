@@ -1,8 +1,19 @@
 <?php
 // Dashboard page
 $db = getDB();
+$user = currentUser();
+$hour = (int)date('H');
+if ($hour < 11) $greeting = 'Selamat Pagi';
+elseif ($hour < 15) $greeting = 'Selamat Siang';
+elseif ($hour < 18) $greeting = 'Selamat Sore';
+else $greeting = 'Selamat Malam';
 ?>
-<div class="kpi-grid" id="kpiGrid">
+<div style="margin-bottom:var(--sp-5);">
+    <h2 style="font-size:var(--fs-xl);font-weight:800;color:var(--text-primary);">👋 <?= $greeting ?>, <?= htmlspecialchars($user['name']) ?>!</h2>
+    <p class="text-secondary" style="font-size:var(--fs-sm);">Berikut ringkasan bisnis Anda hari ini</p>
+</div>
+
+<div class="kpi-grid" id="kpiGrid" style="grid-template-columns:repeat(5,1fr);">
     <div class="kpi-card">
         <div class="kpi-icon" style="background:var(--accent-muted);color:var(--accent);">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
@@ -10,6 +21,13 @@ $db = getDB();
         <div class="kpi-value" id="kpiRevenue">—</div>
         <div class="kpi-label">Omzet Hari Ini</div>
         <div class="kpi-change" id="kpiRevenueChange">—</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon" style="background:var(--success-muted);color:var(--success);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        </div>
+        <div class="kpi-value" id="kpiProfit" style="color:var(--success);">—</div>
+        <div class="kpi-label">Profit Hari Ini</div>
     </div>
     <div class="kpi-card">
         <div class="kpi-icon" style="background:var(--info-muted);color:var(--info);">
@@ -20,7 +38,7 @@ $db = getDB();
         <div class="kpi-change" id="kpiTransChange">—</div>
     </div>
     <div class="kpi-card">
-        <div class="kpi-icon" style="background:var(--success-muted);color:var(--success);">
+        <div class="kpi-icon" style="background:var(--secondary-muted);color:var(--secondary);">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
         </div>
         <div class="kpi-value" id="kpiProducts">—</div>
@@ -75,15 +93,32 @@ $db = getDB();
 const APP = '<?= APP_URL ?>';
 function formatRp(n) { return 'Rp ' + Number(n).toLocaleString('id-ID'); }
 
+// Animated counter effect
+function animateValue(el, start, end, duration, formatter) {
+    if (start === end) { el.textContent = formatter ? formatter(end) : end; return; }
+    const startTime = performance.now();
+    function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const current = Math.floor(start + (end - start) * eased);
+        el.textContent = formatter ? formatter(current) : current;
+        if (progress < 1) requestAnimationFrame(update);
+        else el.textContent = formatter ? formatter(end) : end;
+    }
+    requestAnimationFrame(update);
+}
+
 async function loadDashboard() {
     try {
         const res = await fetch(APP + '/index.php?page=api&action=dashboard-stats');
         const d = await res.json();
 
-        document.getElementById('kpiRevenue').textContent = formatRp(d.today_revenue);
-        document.getElementById('kpiTransactions').textContent = d.today_count;
-        document.getElementById('kpiProducts').textContent = d.total_products;
-        document.getElementById('kpiLowStock').textContent = d.low_stock_count;
+        animateValue(document.getElementById('kpiRevenue'), 0, d.today_revenue, 800, formatRp);
+        animateValue(document.getElementById('kpiProfit'), 0, d.today_profit || 0, 800, formatRp);
+        animateValue(document.getElementById('kpiTransactions'), 0, d.today_count, 600);
+        animateValue(document.getElementById('kpiProducts'), 0, d.total_products, 600);
+        animateValue(document.getElementById('kpiLowStock'), 0, d.low_stock_count, 600);
 
         // Revenue change
         const revEl = document.getElementById('kpiRevenueChange');
@@ -145,7 +180,6 @@ async function loadDashboard() {
                         borderWidth: 1,
                         padding: 12,
                         cornerRadius: 10,
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                         titleFont: { weight: '700' },
                     }
                 },

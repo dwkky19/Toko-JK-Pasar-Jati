@@ -9,6 +9,7 @@ foreach ($stmt->fetchAll() as $s) $settings[$s['setting_key']] = $s['setting_val
     <div class="card">
         <h3 style="font-weight:700;margin-bottom:var(--sp-5);">⚙️ Pengaturan Toko</h3>
         <form method="POST" action="<?= APP_URL ?>/index.php?page=settings">
+            <?= csrfField() ?>
             <div class="form-group">
                 <label class="form-label">Nama Toko</label>
                 <input type="text" name="store_name" class="form-input" value="<?= htmlspecialchars($settings['store_name'] ?? '') ?>" placeholder="Toko JK Pasar Jati">

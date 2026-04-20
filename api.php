@@ -44,27 +44,22 @@ switch ($action) {
 
         try {
             $db->beginTransaction();
-            $subtotal = 0;
 
-            // Validate stock
-            foreach ($items as $item) {
-                $v = $db->prepare("SELECT pv.*, p.name as product_name, p.cost_price FROM product_variants pv JOIN products p ON pv.product_id = p.id WHERE pv.id = ?");
-                $v->execute([$item['variant_id']]);
-                $variant = $v->fetch();
-                if (!$variant) { throw new Exception('Varian tidak ditemukan'); }
-                if ($variant['stock'] < $item['qty']) { throw new Exception('Stok ' . $variant['product_name'] . ' (' . $variant['color'] . ' ' . $variant['size'] . ') tidak cukup'); }
-                $subtotal += $variant['stock']; // will recalc below
-            }
-
-            // Calculate
+            // Pre-fetch all variant data in ONE query per item (optimized from 3x)
+            $variantData = [];
             $subtotal = 0;
             foreach ($items as $item) {
                 $v = $db->prepare("SELECT pv.*, p.name as product_name, p.cost_price, p.sell_price FROM product_variants pv JOIN products p ON pv.product_id = p.id WHERE pv.id = ?");
                 $v->execute([$item['variant_id']]);
                 $variant = $v->fetch();
+                if (!$variant) { throw new Exception('Varian tidak ditemukan'); }
+                if ($variant['stock'] < $item['qty']) { throw new Exception('Stok ' . $variant['product_name'] . ' (' . $variant['color'] . ' ' . $variant['size'] . ') tidak cukup'); }
+                $variant['order_qty'] = $item['qty'];
+                $variantData[$item['variant_id']] = $variant;
                 $subtotal += $variant['sell_price'] * $item['qty'];
             }
 
+            // Calculate discount
             $discountAmount = 0;
             if ($discountType === 'percent' && $discountValue > 0) {
                 $discountAmount = $subtotal * ($discountValue / 100);
@@ -82,18 +77,22 @@ switch ($action) {
                 ->execute([$invoice, $_SESSION['user_id'], $subtotal, $discountType, $discountValue, $discountAmount, $total, $paymentMethod, $paymentAmount, $changeAmount]);
             $txId = $db->lastInsertId();
 
-            // Create items & reduce stock
+            // Create items, reduce stock, and record stock movements
             foreach ($items as $item) {
-                $v = $db->prepare("SELECT pv.*, p.name as product_name, p.cost_price, p.sell_price FROM product_variants pv JOIN products p ON pv.product_id = p.id WHERE pv.id = ?");
-                $v->execute([$item['variant_id']]);
-                $variant = $v->fetch();
+                $variant = $variantData[$item['variant_id']];
                 $itemSubtotal = $variant['sell_price'] * $item['qty'];
                 $variantInfo = $variant['color'] . ' - ' . $variant['size'];
 
+                // Insert transaction item
                 $db->prepare("INSERT INTO transaction_items (transaction_id, variant_id, product_name, variant_info, price, cost_price, quantity, subtotal) VALUES (?,?,?,?,?,?,?,?)")
                     ->execute([$txId, $item['variant_id'], $variant['product_name'], $variantInfo, $variant['sell_price'], $variant['cost_price'], $item['qty'], $itemSubtotal]);
 
+                // Update stock
                 $db->prepare("UPDATE product_variants SET stock = stock - ? WHERE id = ?")->execute([$item['qty'], $item['variant_id']]);
+
+                // Record stock movement (audit trail)
+                $db->prepare("INSERT INTO stock_movements (variant_id, type, quantity, reason, user_id) VALUES (?,?,?,?,?)")
+                    ->execute([$item['variant_id'], 'out', $item['qty'], 'Penjualan: ' . $invoice, $_SESSION['user_id']]);
             }
 
             $db->commit();
@@ -132,6 +131,11 @@ switch ($action) {
         $today = $db->query("SELECT COALESCE(SUM(total),0) as revenue, COUNT(*) as count FROM transactions WHERE DATE(created_at) = CURDATE() AND status='completed'")->fetch();
         $yesterday = $db->query("SELECT COALESCE(SUM(total),0) as revenue, COUNT(*) as count FROM transactions WHERE DATE(created_at) = CURDATE() - INTERVAL 1 DAY AND status='completed'")->fetch();
 
+        // Today's profit
+        $profitToday = $db->query("SELECT COALESCE(SUM(ti.subtotal - (ti.cost_price * ti.quantity)), 0) as profit
+            FROM transaction_items ti JOIN transactions t ON ti.transaction_id = t.id
+            WHERE DATE(t.created_at) = CURDATE() AND t.status='completed'")->fetchColumn();
+
         $totalProducts = $db->query("SELECT COUNT(*) FROM product_variants")->fetchColumn();
         $lowStock = $db->query("SELECT COUNT(*) FROM product_variants WHERE stock <= min_stock")->fetchColumn();
 
@@ -152,6 +156,7 @@ switch ($action) {
             'today_count' => (int)$today['count'],
             'yesterday_revenue' => (float)$yesterday['revenue'],
             'yesterday_count' => (int)$yesterday['count'],
+            'today_profit' => (float)$profitToday,
             'total_products' => (int)$totalProducts,
             'low_stock_count' => (int)$lowStock,
             'weekly' => $weekly,

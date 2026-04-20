@@ -1,6 +1,10 @@
 <?php
 // Auth handler
 function handleLogin() {
+    if (!validateCSRF()) {
+        header('Location: ' . APP_URL . '/index.php?page=login');
+        exit;
+    }
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
 

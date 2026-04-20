@@ -30,6 +30,7 @@ function handlePostAction($page, $action) {
 
 function handleProductForm($db, $action) {
     $id = $_POST['id'] ?? null;
+    $isEdit = !empty($id);
     $name = trim($_POST['name'] ?? '');
     $kode_barang = trim($_POST['kode_barang'] ?? '');
     $category_id = (int)($_POST['category_id'] ?? 0);
@@ -118,8 +119,21 @@ function handleProductForm($db, $action) {
             }
         }
 
+        // Remove variants that are no longer selected (cleanup orphans)
+        if ($isEdit && !empty($existingVariants)) {
+            foreach ($existingVariants as $variantKey => $variantId) {
+                // Only delete if it has zero stock (don't delete variants with stock)
+                $stockCheck = $db->prepare("SELECT stock FROM product_variants WHERE id = ?");
+                $stockCheck->execute([$variantId]);
+                $currentStock = (int)$stockCheck->fetchColumn();
+                if ($currentStock <= 0) {
+                    $db->prepare("DELETE FROM product_variants WHERE id = ?")->execute([$variantId]);
+                }
+            }
+        }
+
         $db->commit();
-        setFlash('success', $id ? 'Produk berhasil diupdate.' : 'Produk berhasil ditambahkan.');
+        setFlash('success', $isEdit ? 'Produk berhasil diupdate.' : 'Produk berhasil ditambahkan.');
     } catch (Exception $e) {
         $db->rollBack();
         setFlash('error', 'Gagal menyimpan produk: ' . $e->getMessage());
@@ -174,7 +188,7 @@ function handleInventory($db, $action) {
         setFlash('error', 'Gagal update stok: ' . $e->getMessage());
     }
 
-    header('Location: ' . APP_URL . '/index.php?page=inventory');
+    header('Location: ' . APP_URL . '/index.php?page=inventory&tab=history');
     exit;
 }
 
@@ -232,11 +246,13 @@ function handleUsers($db, $action) {
 }
 
 function handleSettings($db) {
+    requireAdmin();
     $keys = ['store_name', 'store_address', 'store_phone', 'receipt_footer', 'default_min_stock'];
     foreach ($keys as $key) {
         if (isset($_POST[$key])) {
+            $val = trim($_POST[$key]);
             $db->prepare("INSERT INTO settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = ?")
-                ->execute([$key, $_POST[$key], $_POST[$key]]);
+                ->execute([$key, $val, $val]);
         }
     }
     setFlash('success', 'Pengaturan berhasil disimpan.');
@@ -248,14 +264,35 @@ function handleTransactions($db, $action) {
     if ($action === 'void' && isAdmin()) {
         $id = (int)($_POST['id'] ?? 0);
         if ($id > 0) {
-            // Restore stock
-            $items = $db->prepare("SELECT variant_id, quantity FROM transaction_items WHERE transaction_id = ?");
-            $items->execute([$id]);
-            foreach ($items->fetchAll() as $item) {
-                $db->prepare("UPDATE product_variants SET stock = stock + ? WHERE id = ?")->execute([$item['quantity'], $item['variant_id']]);
+            try {
+                $db->beginTransaction();
+
+                // Check transaction exists and is not already voided
+                $txCheck = $db->prepare("SELECT status FROM transactions WHERE id = ?");
+                $txCheck->execute([$id]);
+                $txStatus = $txCheck->fetchColumn();
+
+                if ($txStatus !== 'completed') {
+                    throw new Exception('Transaksi sudah dibatalkan atau tidak ditemukan.');
+                }
+
+                // Restore stock
+                $items = $db->prepare("SELECT variant_id, quantity FROM transaction_items WHERE transaction_id = ?");
+                $items->execute([$id]);
+                foreach ($items->fetchAll() as $item) {
+                    $db->prepare("UPDATE product_variants SET stock = stock + ? WHERE id = ?")
+                        ->execute([$item['quantity'], $item['variant_id']]);
+                }
+
+                // Mark as voided
+                $db->prepare("UPDATE transactions SET status = 'voided' WHERE id = ?")->execute([$id]);
+
+                $db->commit();
+                setFlash('success', 'Transaksi berhasil dibatalkan dan stok dikembalikan.');
+            } catch (Exception $e) {
+                $db->rollBack();
+                setFlash('error', 'Gagal membatalkan transaksi: ' . $e->getMessage());
             }
-            $db->prepare("UPDATE transactions SET status = 'voided' WHERE id = ?")->execute([$id]);
-            setFlash('success', 'Transaksi berhasil dibatalkan dan stok dikembalikan.');
         }
     }
     header('Location: ' . APP_URL . '/index.php?page=transactions');

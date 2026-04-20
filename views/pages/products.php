@@ -93,6 +93,7 @@ $categories = $db->query("SELECT * FROM categories ORDER BY name")->fetchAll();
                     <div style="display:flex;gap:var(--sp-2);">
                         <a href="<?= APP_URL ?>/index.php?page=products-form&id=<?= $p['id'] ?>" class="btn btn-ghost btn-sm" title="Edit">✏️</a>
                         <form method="POST" action="<?= APP_URL ?>/index.php?page=products&action=delete" onsubmit="return confirm('Yakin hapus produk ini?')">
+                            <?= csrfField() ?>
                             <input type="hidden" name="id" value="<?= $p['id'] ?>">
                             <button type="submit" class="btn btn-danger btn-sm" title="Hapus">🗑️</button>
                         </form>

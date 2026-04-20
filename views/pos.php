@@ -20,6 +20,12 @@
             <span class="pos-brand">Toko JK POS</span>
         </div>
         <div class="pos-header-right">
+            <div style="display:flex;gap:var(--sp-3);font-size:var(--fs-xs);color:var(--text-muted);">
+                <span title="F1: Fokus pencarian"><kbd style="background:var(--bg-hover);padding:1px 6px;border-radius:4px;border:1px solid var(--border);font-family:monospace;font-size:10px;">F1</kbd> Cari</span>
+                <span title="F2: Hapus keranjang"><kbd style="background:var(--bg-hover);padding:1px 6px;border-radius:4px;border:1px solid var(--border);font-family:monospace;font-size:10px;">F2</kbd> Clear</span>
+                <span title="F12: Bayar"><kbd style="background:var(--bg-hover);padding:1px 6px;border-radius:4px;border:1px solid var(--border);font-family:monospace;font-size:10px;">F12</kbd> Bayar</span>
+            </div>
+            <span style="color:var(--border);">|</span>
             <span>👤 <?= htmlspecialchars($user['name']) ?></span>
             <span>🕐 <span id="clock"></span></span>
         </div>
@@ -501,6 +507,9 @@ function showSuccess(data) {
     const methodLabel = {cash:'💵 Tunai', qris:'📱 QRIS', transfer:'🏦 Transfer'}[tx.payment_method];
     document.getElementById('successInvoice').textContent = tx.invoice;
 
+    // Save cart items for receipt printing BEFORE clearing
+    lastCartItems = [...cart];
+
     let html = `<div style="background:var(--bg-card);border-radius:var(--radius-md);padding:var(--sp-4);">`;
     cart.forEach(item => {
         html += `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:var(--fs-sm);">
@@ -530,10 +539,13 @@ function closeSuccess() {
     loadProducts();
 }
 
+let lastCartItems = [];
 function printReceipt() {
     if (!lastTransaction) return;
     const tx = lastTransaction.transaction;
     const store = lastTransaction.store || {};
+    // Use saved cart items, not current cart (which may be cleared)
+    const receiptItems = lastCartItems.length > 0 ? lastCartItems : cart;
     let receipt = `<html><head><title>Struk</title><style>
         body{font-family:monospace;font-size:12px;width:280px;margin:0 auto;padding:20px;}
         .center{text-align:center;} .line{border-top:1px dashed #000;margin:8px 0;}
@@ -543,7 +555,7 @@ function printReceipt() {
     <div class="line"></div>
     <p>${tx.invoice}<br>${tx.date}<br>Kasir: ${tx.cashier}</p>
     <div class="line"></div>`;
-    cart.forEach(item => {
+    receiptItems.forEach(item => {
         receipt += `<div class="row"><span>${item.product_name}</span></div>
         <div class="row"><span>&nbsp; ${item.variant_info} x${item.qty}</span><span>${formatRp(item.price * item.qty)}</span></div>`;
     });
@@ -560,6 +572,37 @@ function printReceipt() {
     win.document.close();
     win.print();
 }
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    // F2: Clear cart
+    if (e.key === 'F2') {
+        e.preventDefault();
+        if (cart.length > 0 && confirm('Hapus semua item di keranjang?')) {
+            cart = [];
+            document.getElementById('discountInput').value = 0;
+            renderCart();
+        }
+    }
+    // F12: Open payment
+    if (e.key === 'F12') {
+        e.preventDefault();
+        if (cart.length > 0) openPayment();
+    }
+    // Escape: Close modals
+    if (e.key === 'Escape') {
+        closeVariantModal();
+        closePaymentModal();
+        if (document.getElementById('successModal').classList.contains('active')) {
+            closeSuccess();
+        }
+    }
+    // F1: Focus search
+    if (e.key === 'F1') {
+        e.preventDefault();
+        document.getElementById('searchInput').focus();
+    }
+});
 
 // Init
 loadProducts();

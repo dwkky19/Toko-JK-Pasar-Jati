@@ -29,6 +29,7 @@ $defaultColors = ['Black','White','Red','Blue','Navy','Grey','Cream','Pink','Bro
         <h2 style="font-size:var(--fs-lg);font-weight:700;margin-bottom:var(--sp-5);"><?= $product ? 'Edit Produk' : 'Tambah Produk Baru' ?></h2>
 
         <form method="POST" action="<?= APP_URL ?>/index.php?page=products-form" enctype="multipart/form-data">
+            <?= csrfField() ?>
             <?php if ($product): ?>
             <input type="hidden" name="id" value="<?= $product['id'] ?>">
             <?php endif; ?>

@@ -101,6 +101,7 @@ $transactions = $stmt->fetchAll();
                                 <?php if (isAdmin() && $t['status'] !== 'voided'): ?>
                                     <form method="POST" action="<?= APP_URL ?>/index.php?page=transactions&action=void"
                                         onsubmit="return confirm('Yakin batalkan transaksi ini? Stok akan dikembalikan.')">
+                                        <?= csrfField() ?>
                                         <input type="hidden" name="id" value="<?= $t['id'] ?>">
                                         <button type="submit" class="btn btn-danger btn-sm">❌ Void</button>
                                     </form>

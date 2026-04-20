@@ -52,6 +52,10 @@ requireLogin();
 // Handle POST actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     require_once __DIR__ . '/actions/handlers.php';
+    if (!validateCSRF()) {
+        header('Location: ' . APP_URL . '/index.php?page=' . $page);
+        exit;
+    }
     handlePostAction($page, $action);
     exit;
 }
@@ -63,7 +67,7 @@ if (!in_array($page, $validPages)) {
 }
 
 // Role-based access
-$adminOnly = ['inventory','reports','users'];
+$adminOnly = ['inventory','reports','users','settings','products-form'];
 if (in_array($page, $adminOnly) && !isAdmin()) {
     $page = 'dashboard';
     setFlash('error', 'Anda tidak memiliki akses ke halaman tersebut.');

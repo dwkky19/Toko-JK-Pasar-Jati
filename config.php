@@ -103,3 +103,25 @@ function getFlash() {
     }
     return null;
 }
+
+// CSRF Protection
+function generateCSRFToken() {
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf_token'];
+}
+
+function csrfField() {
+    $token = generateCSRFToken();
+    return '<input type="hidden" name="csrf_token" value="' . $token . '">';
+}
+
+function validateCSRF() {
+    $token = $_POST['csrf_token'] ?? '';
+    if (empty($token) || !hash_equals($_SESSION['csrf_token'] ?? '', $token)) {
+        setFlash('error', 'Sesi keamanan tidak valid. Silakan coba lagi.');
+        return false;
+    }
+    return true;
+}

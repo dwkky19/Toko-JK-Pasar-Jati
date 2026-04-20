@@ -67,7 +67,7 @@ $methods = ['cash'=>'💵 Tunai','qris'=>'📱 QRIS','transfer'=>'🏦 Transfer'
         <h3 style="font-weight:700;margin-bottom:var(--sp-4);">Preview Struk</h3>
         <div class="receipt" id="receiptContent">
             <div class="receipt-header">
-                <h3><?= $settings['store_name'] ?? 'FASHIONHUB' ?></h3>
+                <h3><?= $settings['store_name'] ?? 'Toko JK Pasar Jati' ?></h3>
                 <p><?= $settings['store_address'] ?? '' ?></p>
                 <p><?= $settings['store_phone'] ?? '' ?></p>
             </div>

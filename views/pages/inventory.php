@@ -52,7 +52,8 @@ $movements = $db->query("SELECT sm.*, pv.sku, pv.size, pv.color, p.name as produ
 <div class="tab-panel <?= $tab==='in'?'active':'' ?>" id="tab-in">
     <div class="card" style="max-width:600px;">
         <h3 style="margin-bottom:var(--sp-4);font-weight:700;">📥 Catat Stok Masuk</h3>
-        <form method="POST" action="<?= APP_URL ?>/index.php?page=inventory">
+        <form method="POST" action="<?= APP_URL ?>/index.php?page=inventory&tab=in">
+            <?= csrfField() ?>
             <input type="hidden" name="type" value="in">
             <div class="form-group">
                 <label class="form-label">Pilih Varian Produk *</label>
@@ -91,7 +92,8 @@ $movements = $db->query("SELECT sm.*, pv.sku, pv.size, pv.color, p.name as produ
 <div class="tab-panel <?= $tab==='out'?'active':'' ?>" id="tab-out">
     <div class="card" style="max-width:600px;">
         <h3 style="margin-bottom:var(--sp-4);font-weight:700;">📤 Catat Stok Keluar</h3>
-        <form method="POST" action="<?= APP_URL ?>/index.php?page=inventory">
+        <form method="POST" action="<?= APP_URL ?>/index.php?page=inventory&tab=out">
+            <?= csrfField() ?>
             <input type="hidden" name="type" value="out">
             <div class="form-group">
                 <label class="form-label">Pilih Varian Produk *</label>
