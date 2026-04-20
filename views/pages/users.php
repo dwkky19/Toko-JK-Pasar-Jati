@@ -4,9 +4,9 @@ $users = $db->query("SELECT * FROM users ORDER BY created_at DESC")->fetchAll();
 ?>
 
 <div class="toolbar">
-    <div class="toolbar-left"><h3 style="font-size:var(--fs-md);">Daftar Pengguna</h3></div>
+    <div class="toolbar-left"><h3 style="font-size:var(--fs-md);display:flex;align-items:center;gap:var(--sp-2);"><i data-lucide="users" style="width:20px;height:20px;color:var(--accent);"></i> Daftar Pengguna</h3></div>
     <div class="toolbar-right">
-        <button class="btn btn-primary" onclick="openUserModal()">+ Tambah Pengguna</button>
+        <button class="btn btn-primary" onclick="openUserModal()"><i data-lucide="user-plus" style="width:16px;height:16px;"></i> Tambah Pengguna</button>
     </div>
 </div>
 
@@ -28,12 +28,12 @@ $users = $db->query("SELECT * FROM users ORDER BY created_at DESC")->fetchAll();
             <td class="text-sm text-secondary"><?= date('d/m/Y', strtotime($u['created_at'])) ?></td>
             <td>
                 <div style="display:flex;gap:var(--sp-2);">
-                    <button class="btn btn-ghost btn-sm" onclick="editUser(<?= htmlspecialchars(json_encode($u)) ?>)">✏️</button>
+                    <button class="btn btn-ghost btn-sm" onclick="editUser(<?= htmlspecialchars(json_encode($u)) ?>)"><i data-lucide="pencil" style="width:14px;height:14px;"></i></button>
                     <?php if ($u['id'] !== $_SESSION['user_id']): ?>
                     <form method="POST" action="<?= APP_URL ?>/index.php?page=users&action=delete" onsubmit="return confirm('Yakin hapus pengguna ini?')">
                         <?= csrfField() ?>
                         <input type="hidden" name="id" value="<?= $u['id'] ?>">
-                        <button type="submit" class="btn btn-danger btn-sm">🗑️</button>
+                        <button type="submit" class="btn btn-danger btn-sm"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button>
                     </form>
                     <?php endif; ?>
                 </div>
@@ -84,7 +84,7 @@ $users = $db->query("SELECT * FROM users ORDER BY created_at DESC")->fetchAll();
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" onclick="closeUserModal()">Batal</button>
-                <button type="submit" class="btn btn-primary">💾 Simpan</button>
+                <button type="submit" class="btn btn-primary"><i data-lucide="save" style="width:16px;height:16px;"></i> Simpan</button>
             </div>
         </form>
     </div>

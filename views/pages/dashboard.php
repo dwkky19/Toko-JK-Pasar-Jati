@@ -9,46 +9,56 @@ elseif ($hour < 18) $greeting = 'Selamat Sore';
 else $greeting = 'Selamat Malam';
 ?>
 <div style="margin-bottom:var(--sp-5);">
-    <h2 style="font-size:var(--fs-xl);font-weight:800;color:var(--text-primary);">👋 <?= $greeting ?>, <?= htmlspecialchars($user['name']) ?>!</h2>
+    <h2 style="font-size:var(--fs-xl);font-weight:800;color:var(--text-primary);letter-spacing:-0.02em;">👋 <?= $greeting ?>, <?= htmlspecialchars($user['name']) ?>!</h2>
     <p class="text-secondary" style="font-size:var(--fs-sm);">Berikut ringkasan bisnis Anda hari ini</p>
 </div>
 
 <div class="kpi-grid" id="kpiGrid" style="grid-template-columns:repeat(5,1fr);">
     <div class="kpi-card">
         <div class="kpi-icon" style="background:var(--accent-muted);color:var(--accent);">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            <i data-lucide="dollar-sign" style="width:22px;height:22px;"></i>
         </div>
-        <div class="kpi-value" id="kpiRevenue">—</div>
+        <div class="kpi-value" id="kpiRevenue">
+            <div class="skeleton" style="height:32px;width:140px;"></div>
+        </div>
         <div class="kpi-label">Omzet Hari Ini</div>
         <div class="kpi-change" id="kpiRevenueChange">—</div>
     </div>
     <div class="kpi-card">
         <div class="kpi-icon" style="background:var(--success-muted);color:var(--success);">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            <i data-lucide="trending-up" style="width:22px;height:22px;"></i>
         </div>
-        <div class="kpi-value" id="kpiProfit" style="color:var(--success);">—</div>
+        <div class="kpi-value" id="kpiProfit" style="color:var(--success);">
+            <div class="skeleton" style="height:32px;width:120px;"></div>
+        </div>
         <div class="kpi-label">Profit Hari Ini</div>
     </div>
     <div class="kpi-card">
         <div class="kpi-icon" style="background:var(--info-muted);color:var(--info);">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            <i data-lucide="shopping-bag" style="width:22px;height:22px;"></i>
         </div>
-        <div class="kpi-value" id="kpiTransactions">—</div>
+        <div class="kpi-value" id="kpiTransactions">
+            <div class="skeleton" style="height:32px;width:60px;"></div>
+        </div>
         <div class="kpi-label">Transaksi Hari Ini</div>
         <div class="kpi-change" id="kpiTransChange">—</div>
     </div>
     <div class="kpi-card">
         <div class="kpi-icon" style="background:var(--secondary-muted);color:var(--secondary);">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            <i data-lucide="package" style="width:22px;height:22px;"></i>
         </div>
-        <div class="kpi-value" id="kpiProducts">—</div>
+        <div class="kpi-value" id="kpiProducts">
+            <div class="skeleton" style="height:32px;width:60px;"></div>
+        </div>
         <div class="kpi-label">Total SKU Aktif</div>
     </div>
     <div class="kpi-card">
         <div class="kpi-icon" style="background:var(--warning-muted);color:var(--warning);">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <i data-lucide="alert-triangle" style="width:22px;height:22px;"></i>
         </div>
-        <div class="kpi-value" id="kpiLowStock">—</div>
+        <div class="kpi-value" id="kpiLowStock">
+            <div class="skeleton" style="height:32px;width:40px;"></div>
+        </div>
         <div class="kpi-label">Low Stock Alert</div>
     </div>
 </div>
@@ -56,36 +66,48 @@ else $greeting = 'Selamat Malam';
 <div class="charts-grid">
     <div class="card">
         <div class="card-header">
-            <h3 class="card-title">📈 Grafik Penjualan (7 Hari)</h3>
+            <h3 class="card-title"><i data-lucide="trending-up" style="width:18px;height:18px;"></i> Grafik Penjualan (7 Hari)</h3>
         </div>
-        <div class="chart-container">
-            <canvas id="salesChart"></canvas>
+        <div class="chart-container" id="salesChartContainer">
+            <div class="skeleton" style="height:280px;width:100%;"></div>
         </div>
     </div>
     <div class="card">
         <div class="card-header">
-            <h3 class="card-title">🏆 Top 5 Produk</h3>
+            <h3 class="card-title"><i data-lucide="trophy" style="width:18px;height:18px;"></i> Top 5 Produk</h3>
         </div>
-        <div id="topProductsList" style="margin-top:var(--sp-2);"></div>
+        <div id="topProductsList" style="margin-top:var(--sp-2);">
+            <div class="skeleton" style="height:20px;width:100%;margin-bottom:12px;"></div>
+            <div class="skeleton" style="height:20px;width:80%;margin-bottom:12px;"></div>
+            <div class="skeleton" style="height:20px;width:60%;"></div>
+        </div>
     </div>
 </div>
 
 <div class="bottom-grid">
     <div class="card">
         <div class="card-header">
-            <h3 class="card-title">🧾 Transaksi Terbaru</h3>
+            <h3 class="card-title"><i data-lucide="receipt" style="width:18px;height:18px;"></i> Transaksi Terbaru</h3>
             <a href="<?= APP_URL ?>/index.php?page=transactions" class="btn btn-ghost btn-sm">Lihat Semua →</a>
         </div>
-        <div id="recentTransactions"></div>
+        <div id="recentTransactions">
+            <div class="skeleton" style="height:16px;width:100%;margin-bottom:10px;"></div>
+            <div class="skeleton" style="height:16px;width:90%;margin-bottom:10px;"></div>
+            <div class="skeleton" style="height:16px;width:85%;"></div>
+        </div>
     </div>
     <div class="card">
         <div class="card-header">
-            <h3 class="card-title">⚠️ Low Stock Alert</h3>
+            <h3 class="card-title"><i data-lucide="alert-triangle" style="width:18px;height:18px;"></i> Low Stock Alert</h3>
             <?php if(isAdmin()): ?>
             <a href="<?= APP_URL ?>/index.php?page=inventory" class="btn btn-ghost btn-sm">Kelola →</a>
             <?php endif; ?>
         </div>
-        <div id="lowStockList"></div>
+        <div id="lowStockList">
+            <div class="skeleton" style="height:16px;width:100%;margin-bottom:10px;"></div>
+            <div class="skeleton" style="height:16px;width:80%;margin-bottom:10px;"></div>
+            <div class="skeleton" style="height:16px;width:70%;"></div>
+        </div>
     </div>
 </div>
 
@@ -93,7 +115,6 @@ else $greeting = 'Selamat Malam';
 const APP = '<?= APP_URL ?>';
 function formatRp(n) { return 'Rp ' + Number(n).toLocaleString('id-ID'); }
 
-// Animated counter effect
 function animateValue(el, start, end, duration, formatter) {
     if (start === end) { el.textContent = formatter ? formatter(end) : end; return; }
     const startTime = performance.now();
@@ -108,6 +129,8 @@ function animateValue(el, start, end, duration, formatter) {
     }
     requestAnimationFrame(update);
 }
+
+let salesChart = null;
 
 async function loadDashboard() {
     try {
@@ -135,73 +158,43 @@ async function loadDashboard() {
             tEl.textContent = (pct >= 0 ? '↑ ' : '↓ ') + Math.abs(pct) + '%';
         } else { tEl.textContent = '—'; tEl.className = 'kpi-change'; }
 
-        // Sales chart
+        // === ApexCharts: Sales chart ===
         const labels = d.weekly.map(w => { const dt = new Date(w.date); return dt.toLocaleDateString('id-ID', {day:'numeric',month:'short'}); });
-        const data = d.weekly.map(w => w.revenue);
-        const ctx = document.getElementById('salesChart').getContext('2d');
-        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-        gradient.addColorStop(0, 'rgba(99,102,241,0.20)');
-        gradient.addColorStop(0.5, 'rgba(139,92,246,0.08)');
-        gradient.addColorStop(1, 'rgba(99,102,241,0.01)');
+        const data = d.weekly.map(w => parseFloat(w.revenue));
 
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Revenue',
-                    data: data,
-                    borderColor: '#6366F1',
-                    backgroundColor: gradient,
-                    borderWidth: 2.5,
-                    fill: true,
-                    tension: 0.4,
-                    pointBackgroundColor: '#6366F1',
-                    pointBorderColor: '#FFFFFF',
-                    pointBorderWidth: 2,
-                    pointRadius: 5,
-                    pointHoverRadius: 7,
-                    pointHoverBackgroundColor: '#4F46E5',
-                    pointHoverBorderColor: '#FFFFFF',
-                    pointHoverBorderWidth: 3,
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: { label: (c) => formatRp(c.parsed.y) },
-                        backgroundColor: '#FFFFFF',
-                        titleColor: '#1E293B',
-                        bodyColor: '#1E293B',
-                        borderColor: '#E2E8F0',
-                        borderWidth: 1,
-                        padding: 12,
-                        cornerRadius: 10,
-                        titleFont: { weight: '700' },
-                    }
-                },
-                scales: {
-                    x: { grid: { color: 'rgba(226,232,240,0.6)' }, ticks: { color: '#64748B', font: { weight: '500' } } },
-                    y: { grid: { color: 'rgba(226,232,240,0.6)' }, ticks: { color: '#64748B', font: { weight: '500' }, callback: (v) => formatRp(v) } }
-                }
-            }
-        });
+        const chartOpts = {
+            series: [{ name: 'Revenue', data: data }],
+            chart: { type: 'area', height: 280, toolbar: { show: false }, background: 'transparent', animations: { enabled: true, easing: 'easeinout', speed: 800 }, fontFamily: 'Inter, sans-serif' },
+            colors: ['#6366F1'],
+            fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05, stops: [0, 90, 100] } },
+            stroke: { curve: 'smooth', width: 3 },
+            xaxis: { categories: labels, labels: { style: { colors: '#64748B', fontSize: '11px', fontWeight: 500 } }, axisBorder: { show: false }, axisTicks: { show: false } },
+            yaxis: { labels: { style: { colors: '#64748B', fontSize: '11px', fontWeight: 500 }, formatter: v => formatRp(v) } },
+            grid: { borderColor: 'rgba(0,0,0,0.08)', strokeDashArray: 3 },
+            dataLabels: { enabled: false },
+            tooltip: { theme: 'light', y: { formatter: v => formatRp(v) }, style: { fontSize: '12px' } },
+            markers: { size: 5, colors: ['#6366F1'], strokeColors: '#FFFFFF', strokeWidth: 3, hover: { size: 7 } },
+        };
+
+        const container = document.getElementById('salesChartContainer');
+        container.innerHTML = '';
+        if (salesChart) salesChart.destroy();
+        salesChart = new ApexCharts(container, chartOpts);
+        salesChart.render();
 
         // Top products
         let topHtml = '';
         d.top_products.forEach((p, i) => {
             const maxQty = d.top_products[0]?.qty || 1;
             const pct = (p.qty / maxQty * 100).toFixed(0);
+            const colors = ['#6366F1','#8B5CF6','#A855F7','#3B82F6','#059669'];
             topHtml += `<div style="margin-bottom:var(--sp-3);">
                 <div style="display:flex;justify-content:space-between;font-size:var(--fs-sm);margin-bottom:4px;">
-                    <span>${i+1}. ${p.product_name}</span>
-                    <span class="text-accent font-bold">${p.qty} pcs</span>
+                    <span style="color:var(--text-secondary);">${i+1}. ${p.product_name}</span>
+                    <span style="color:${colors[i]};font-weight:700;">${p.qty} pcs</span>
                 </div>
-                <div style="height:6px;background:var(--bg-hover);border-radius:var(--radius-full);overflow:hidden;">
-                    <div style="height:100%;width:${pct}%;background:var(--accent);border-radius:var(--radius-full);transition:width 0.6s;"></div>
+                <div style="height:6px;background:var(--bg-elevated);border-radius:var(--radius-full);overflow:hidden;">
+                    <div style="height:100%;width:${pct}%;background:${colors[i]};border-radius:var(--radius-full);transition:width 0.8s var(--ease);"></div>
                 </div>
             </div>`;
         });
@@ -246,6 +239,8 @@ async function loadDashboard() {
     }
 }
 
-loadDashboard();
-setInterval(loadDashboard, 30000);
+document.addEventListener('DOMContentLoaded', function() {
+    loadDashboard();
+    setInterval(loadDashboard, 30000);
+});
 </script>

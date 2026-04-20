@@ -30,7 +30,7 @@ $categories = $db->query("SELECT * FROM categories ORDER BY name")->fetchAll();
         <form method="GET" action="<?= APP_URL ?>/index.php" class="search-bar" style="display:flex;gap:var(--sp-3);align-items:center;">
             <input type="hidden" name="page" value="products">
             <div style="position:relative;">
-                <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--text-muted);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <i data-lucide="search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--text-muted);"></i>
                 <input type="text" name="search" class="form-input" style="padding-left:38px;width:250px;" placeholder="Cari produk..." value="<?= htmlspecialchars($search) ?>">
             </div>
             <select name="category" class="form-select" style="width:150px;" onchange="this.form.submit()">
@@ -39,7 +39,7 @@ $categories = $db->query("SELECT * FROM categories ORDER BY name")->fetchAll();
                 <option value="<?= $cat['id'] ?>" <?= $category == $cat['id'] ? 'selected' : '' ?>><?= htmlspecialchars($cat['name']) ?></option>
                 <?php endforeach; ?>
             </select>
-            <button type="submit" class="btn btn-secondary btn-sm">Cari</button>
+            <button type="submit" class="btn btn-secondary btn-sm"><i data-lucide="search" style="width:14px;height:14px;"></i> Cari</button>
             <?php if ($search || $category): ?>
             <a href="<?= APP_URL ?>/index.php?page=products" class="btn btn-ghost btn-sm">Reset</a>
             <?php endif; ?>
@@ -47,14 +47,14 @@ $categories = $db->query("SELECT * FROM categories ORDER BY name")->fetchAll();
     </div>
     <?php if (isAdmin()): ?>
     <div class="toolbar-right">
-        <a href="<?= APP_URL ?>/index.php?page=products-form" class="btn btn-primary">+ Tambah Produk</a>
+        <a href="<?= APP_URL ?>/index.php?page=products-form" class="btn btn-primary"><i data-lucide="plus" style="width:16px;height:16px;"></i> Tambah Produk</a>
     </div>
     <?php endif; ?>
 </div>
 
 <?php if (empty($products)): ?>
 <div class="empty-state">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+    <i data-lucide="package" style="width:64px;height:64px;"></i>
     <p>Belum ada produk</p>
     <?php if(isAdmin()): ?><a href="<?= APP_URL ?>/index.php?page=products-form" class="btn btn-primary">+ Tambah Produk Pertama</a><?php endif; ?>
 </div>
@@ -70,11 +70,11 @@ $categories = $db->query("SELECT * FROM categories ORDER BY name")->fetchAll();
             $stockClass = ($p['total_stock'] ?? 0) <= 5 ? (($p['total_stock'] ?? 0) == 0 ? 'text-danger' : 'text-warning') : 'text-success';
         ?>
             <tr>
-                <td><code style="font-size:var(--fs-xs);background:var(--bg-elevated);padding:2px 6px;border-radius:var(--radius-sm);color:var(--accent);font-weight:600;"><?= htmlspecialchars($p['kode_barang'] ?? '-') ?></code></td>
+                <td><code style="font-size:var(--fs-xs);background:var(--bg-elevated);padding:2px 8px;border-radius:var(--radius-sm);color:var(--accent);font-weight:600;"><?= htmlspecialchars($p['kode_barang'] ?? '-') ?></code></td>
                 <td>
                     <div style="display:flex;align-items:center;gap:var(--sp-3);">
                         <div style="width:40px;height:40px;background:var(--bg-elevated);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;overflow:hidden;">
-                            <?php if($p['image']): ?><img src="<?= APP_URL ?>/uploads/products/<?= $p['image'] ?>" style="width:100%;height:100%;object-fit:cover;"><?php else: ?>👕<?php endif; ?>
+                            <?php if($p['image']): ?><img src="<?= APP_URL ?>/uploads/products/<?= $p['image'] ?>" style="width:100%;height:100%;object-fit:cover;" loading="lazy"><?php else: ?>👕<?php endif; ?>
                         </div>
                         <div>
                             <div class="font-bold"><?= htmlspecialchars($p['name']) ?></div>
@@ -91,11 +91,11 @@ $categories = $db->query("SELECT * FROM categories ORDER BY name")->fetchAll();
                 <?php if (isAdmin()): ?>
                 <td>
                     <div style="display:flex;gap:var(--sp-2);">
-                        <a href="<?= APP_URL ?>/index.php?page=products-form&id=<?= $p['id'] ?>" class="btn btn-ghost btn-sm" title="Edit">✏️</a>
+                        <a href="<?= APP_URL ?>/index.php?page=products-form&id=<?= $p['id'] ?>" class="btn btn-ghost btn-sm" title="Edit"><i data-lucide="pencil" style="width:14px;height:14px;"></i></a>
                         <form method="POST" action="<?= APP_URL ?>/index.php?page=products&action=delete" onsubmit="return confirm('Yakin hapus produk ini?')">
                             <?= csrfField() ?>
                             <input type="hidden" name="id" value="<?= $p['id'] ?>">
-                            <button type="submit" class="btn btn-danger btn-sm" title="Hapus">🗑️</button>
+                            <button type="submit" class="btn btn-danger btn-sm" title="Hapus"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button>
                         </form>
                     </div>
                 </td>

@@ -6,7 +6,7 @@ $tx->execute([$id]);
 $transaction = $tx->fetch();
 
 if (!$transaction) {
-    echo '<div class="empty-state"><p>Transaksi tidak ditemukan</p><a href="'.APP_URL.'/index.php?page=transactions" class="btn btn-secondary">← Kembali</a></div>';
+    echo '<div class="empty-state"><i data-lucide="file-x" style="width:64px;height:64px;"></i><p>Transaksi tidak ditemukan</p><a href="'.APP_URL.'/index.php?page=transactions" class="btn btn-secondary">← Kembali</a></div>';
     return;
 }
 
@@ -21,13 +21,13 @@ $methods = ['cash'=>'💵 Tunai','qris'=>'📱 QRIS','transfer'=>'🏦 Transfer'
 ?>
 
 <div style="margin-bottom:var(--sp-4);">
-    <a href="<?= APP_URL ?>/index.php?page=transactions" class="btn btn-ghost btn-sm">← Kembali ke Transaksi</a>
+    <a href="<?= APP_URL ?>/index.php?page=transactions" class="btn btn-ghost btn-sm"><i data-lucide="arrow-left" style="width:14px;height:14px;"></i> Kembali ke Transaksi</a>
 </div>
 
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-6);max-width:900px;">
     <!-- Detail -->
     <div class="card">
-        <h3 style="font-weight:700;margin-bottom:var(--sp-4);">Detail Transaksi</h3>
+        <h3 style="font-weight:700;margin-bottom:var(--sp-4);display:flex;align-items:center;gap:var(--sp-2);"><i data-lucide="file-text" style="width:18px;height:18px;color:var(--accent);"></i> Detail Transaksi</h3>
         <table style="width:100%;font-size:var(--fs-sm);">
             <tr><td class="text-secondary" style="padding:6px 0;">Invoice</td><td class="font-bold"><?= $transaction['invoice_number'] ?></td></tr>
             <tr><td class="text-secondary" style="padding:6px 0;">Tanggal</td><td><?= date('d/m/Y H:i', strtotime($transaction['created_at'])) ?></td></tr>
@@ -64,33 +64,33 @@ $methods = ['cash'=>'💵 Tunai','qris'=>'📱 QRIS','transfer'=>'🏦 Transfer'
 
     <!-- Receipt Preview -->
     <div class="card">
-        <h3 style="font-weight:700;margin-bottom:var(--sp-4);">Preview Struk</h3>
-        <div class="receipt" id="receiptContent">
-            <div class="receipt-header">
-                <h3><?= $settings['store_name'] ?? 'Toko JK Pasar Jati' ?></h3>
+        <h3 style="font-weight:700;margin-bottom:var(--sp-4);display:flex;align-items:center;gap:var(--sp-2);"><i data-lucide="printer" style="width:18px;height:18px;color:var(--accent);"></i> Preview Struk</h3>
+        <div style="background:#fff;color:#000;padding:var(--sp-6);border-radius:var(--radius-md);font-family:monospace;font-size:12px;max-width:300px;margin:0 auto;box-shadow:var(--shadow-md);" id="receiptContent">
+            <div style="text-align:center;margin-bottom:var(--sp-4);">
+                <h3 style="font-size:14px;"><?= $settings['store_name'] ?? 'Toko JK Pasar Jati' ?></h3>
                 <p><?= $settings['store_address'] ?? '' ?></p>
                 <p><?= $settings['store_phone'] ?? '' ?></p>
             </div>
-            <div class="receipt-divider"></div>
+            <div style="border-top:1px dashed #CBD5E1;margin:8px 0;"></div>
             <p><?= $transaction['invoice_number'] ?><br><?= date('d/m/Y H:i', strtotime($transaction['created_at'])) ?><br>Kasir: <?= htmlspecialchars($transaction['cashier']) ?></p>
-            <div class="receipt-divider"></div>
+            <div style="border-top:1px dashed #CBD5E1;margin:8px 0;"></div>
             <?php foreach ($txItems as $item): ?>
             <div><?= $item['product_name'] ?></div>
-            <div class="receipt-item"><span>&nbsp; <?= $item['variant_info'] ?> x<?= $item['quantity'] ?></span><span>Rp <?= number_format($item['subtotal'],0,',','.') ?></span></div>
+            <div style="display:flex;justify-content:space-between;"><span>&nbsp; <?= $item['variant_info'] ?> x<?= $item['quantity'] ?></span><span>Rp <?= number_format($item['subtotal'],0,',','.') ?></span></div>
             <?php endforeach; ?>
-            <div class="receipt-divider"></div>
+            <div style="border-top:1px dashed #CBD5E1;margin:8px 0;"></div>
             <?php if ($transaction['discount_amount'] > 0): ?>
-            <div class="receipt-item"><span>Diskon</span><span>-Rp <?= number_format($transaction['discount_amount'],0,',','.') ?></span></div>
+            <div style="display:flex;justify-content:space-between;"><span>Diskon</span><span>-Rp <?= number_format($transaction['discount_amount'],0,',','.') ?></span></div>
             <?php endif; ?>
-            <div class="receipt-item receipt-total"><span>TOTAL</span><span>Rp <?= number_format($transaction['total'],0,',','.') ?></span></div>
-            <div class="receipt-item"><span>Bayar</span><span>Rp <?= number_format($transaction['payment_amount'],0,',','.') ?></span></div>
+            <div style="display:flex;justify-content:space-between;font-weight:bold;font-size:14px;"><span>TOTAL</span><span>Rp <?= number_format($transaction['total'],0,',','.') ?></span></div>
+            <div style="display:flex;justify-content:space-between;"><span>Bayar</span><span>Rp <?= number_format($transaction['payment_amount'],0,',','.') ?></span></div>
             <?php if ($transaction['change_amount'] > 0): ?>
-            <div class="receipt-item"><span>Kembali</span><span>Rp <?= number_format($transaction['change_amount'],0,',','.') ?></span></div>
+            <div style="display:flex;justify-content:space-between;"><span>Kembali</span><span>Rp <?= number_format($transaction['change_amount'],0,',','.') ?></span></div>
             <?php endif; ?>
-            <div class="receipt-divider"></div>
+            <div style="border-top:1px dashed #CBD5E1;margin:8px 0;"></div>
             <p style="text-align:center;"><?= $settings['receipt_footer'] ?? 'Terima kasih!' ?></p>
         </div>
-        <button class="btn btn-primary mt-4 w-full" onclick="printReceipt()">🖨️ Cetak Struk</button>
+        <button class="btn btn-primary mt-4 w-full" onclick="printReceipt()"><i data-lucide="printer" style="width:16px;height:16px;"></i> Cetak Struk</button>
     </div>
 </div>
 
@@ -98,7 +98,7 @@ $methods = ['cash'=>'💵 Tunai','qris'=>'📱 QRIS','transfer'=>'🏦 Transfer'
 function printReceipt() {
     const content = document.getElementById('receiptContent').innerHTML;
     const win = window.open('','_blank','width=320,height=600');
-    win.document.write('<html><head><title>Struk</title><style>body{font-family:monospace;font-size:12px;width:280px;margin:0 auto;padding:20px;}.center{text-align:center;}.line,.receipt-divider{border-top:1px dashed #000;margin:8px 0;}.receipt-item,.row{display:flex;justify-content:space-between;}.receipt-total,.bold{font-weight:bold;}.receipt-header{text-align:center;}</style></head><body>'+content+'</body></html>');
+    win.document.write('<html><head><title>Struk</title><style>body{font-family:monospace;font-size:12px;width:280px;margin:0 auto;padding:20px;}</style></head><body>'+content+'</body></html>');
     win.document.close();
     win.print();
 }

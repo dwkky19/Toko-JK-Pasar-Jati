@@ -36,11 +36,7 @@ $transactions = $stmt->fetchAll();
         <form method="GET" action="<?= APP_URL ?>/index.php" style="display:flex;gap:var(--sp-3);align-items:center;">
             <input type="hidden" name="page" value="transactions">
             <div style="position:relative;">
-                <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--text-muted);"
-                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="11" cy="11" r="8" />
-                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
+                <i data-lucide="search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--text-muted);"></i>
                 <input type="text" name="search" class="form-input" style="padding-left:38px;width:220px;"
                     placeholder="Cari no. transaksi..." value="<?= htmlspecialchars($search) ?>">
             </div>
@@ -50,17 +46,14 @@ $transactions = $stmt->fetchAll();
                 <option value="qris" <?= $method === 'qris' ? 'selected' : '' ?>>📱 QRIS</option>
                 <option value="transfer" <?= $method === 'transfer' ? 'selected' : '' ?>>🏦 Transfer</option>
             </select>
-            <button type="submit" class="btn btn-secondary btn-sm">Cari</button>
+            <button type="submit" class="btn btn-secondary btn-sm"><i data-lucide="search" style="width:14px;height:14px;"></i> Cari</button>
         </form>
     </div>
 </div>
 
 <?php if (empty($transactions)): ?>
     <div class="empty-state">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-            <polyline points="14 2 14 8 20 8" />
-        </svg>
+        <i data-lucide="file-text" style="width:64px;height:64px;"></i>
         <p>Belum ada transaksi</p>
     </div>
 <?php else: ?>
@@ -97,13 +90,13 @@ $transactions = $stmt->fetchAll();
                         <td>
                             <div style="display:flex;gap:var(--sp-2);">
                                 <a href="<?= APP_URL ?>/index.php?page=transaction-detail&id=<?= $t['id'] ?>"
-                                    class="btn btn-ghost btn-sm">👁️ Detail</a>
+                                    class="btn btn-ghost btn-sm"><i data-lucide="eye" style="width:14px;height:14px;"></i> Detail</a>
                                 <?php if (isAdmin() && $t['status'] !== 'voided'): ?>
                                     <form method="POST" action="<?= APP_URL ?>/index.php?page=transactions&action=void"
                                         onsubmit="return confirm('Yakin batalkan transaksi ini? Stok akan dikembalikan.')">
                                         <?= csrfField() ?>
                                         <input type="hidden" name="id" value="<?= $t['id'] ?>">
-                                        <button type="submit" class="btn btn-danger btn-sm">❌ Void</button>
+                                        <button type="submit" class="btn btn-danger btn-sm"><i data-lucide="x-circle" style="width:14px;height:14px;"></i> Void</button>
                                     </form>
                                 <?php endif; ?>
                             </div>

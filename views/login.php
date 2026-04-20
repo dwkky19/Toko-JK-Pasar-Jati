@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login — Toko JK Pasar Jati</title>
-    <link rel="stylesheet" href="<?= APP_URL ?>/assets/css/app.css">
+    <link rel="stylesheet" href="<?= APP_URL ?>/assets/css/app.css?v=<?= time() ?>">
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.344.0/dist/umd/lucide.min.js"></script>
 </head>
 <body>
 <div class="login-page">
@@ -17,22 +18,33 @@
 
         <?php $flash = getFlash(); if ($flash): ?>
         <div class="login-error">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            <i data-lucide="alert-circle" style="width:16px;height:16px;flex-shrink:0;"></i>
             <?= htmlspecialchars($flash['message']) ?>
         </div>
         <?php endif; ?>
 
-        <form method="POST" action="<?= APP_URL ?>/index.php?page=login">
+        <form method="POST" action="<?= APP_URL ?>/index.php?page=login" id="loginForm">
             <?= csrfField() ?>
             <div class="form-group">
                 <label class="form-label">Username</label>
-                <input type="text" name="username" class="form-input" placeholder="Masukkan username" required autofocus>
+                <div style="position:relative;">
+                    <input type="text" name="username" class="form-input" style="padding-left:40px;" placeholder="Masukkan username" required autofocus>
+                    <i data-lucide="user" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--text-muted);"></i>
+                </div>
             </div>
             <div class="form-group">
                 <label class="form-label">Password</label>
-                <input type="password" name="password" class="form-input" placeholder="Masukkan password" required>
+                <div style="position:relative;">
+                    <input type="password" name="password" id="pwdInput" class="form-input" style="padding-left:40px;padding-right:40px;" placeholder="Masukkan password" required>
+                    <i data-lucide="lock" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--text-muted);"></i>
+                    <button type="button" onclick="togglePwd()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-muted);padding:4px;">
+                        <i data-lucide="eye" id="eyeIcon" style="width:18px;height:18px;"></i>
+                    </button>
+                </div>
             </div>
-            <button type="submit" class="login-btn">Masuk</button>
+            <button type="submit" class="login-btn" id="loginBtn">
+                <span id="loginText">Masuk</span>
+            </button>
         </form>
 
         <p style="text-align:center; margin-top: 1.5rem; font-size: 0.75rem; color: var(--text-muted);">
@@ -40,5 +52,17 @@
         </p>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() { if(window.lucide) lucide.createIcons(); });
+function togglePwd() {
+    const inp = document.getElementById('pwdInput');
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+document.getElementById('loginForm').addEventListener('submit', function() {
+    const btn = document.getElementById('loginBtn');
+    btn.disabled = true;
+    document.getElementById('loginText').textContent = 'Memproses...';
+});
+</script>
 </body>
 </html>

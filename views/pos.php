@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Point of Sale — Toko JK Pasar Jati</title>
-    <link rel="stylesheet" href="<?= APP_URL ?>/assets/css/app.css">
-    <link rel="stylesheet" href="<?= APP_URL ?>/assets/css/pos.css">
+    <link rel="stylesheet" href="<?= APP_URL ?>/assets/css/app.css?v=<?= time() ?>">
+    <link rel="stylesheet" href="<?= APP_URL ?>/assets/css/pos.css?v=<?= time() ?>">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.344.0/dist/umd/lucide.min.js"></script>
 </head>
 <body>
 <?php $user = currentUser(); $db = getDB(); $categories = $db->query("SELECT * FROM categories ORDER BY name")->fetchAll(); ?>
@@ -14,18 +16,18 @@
     <div class="pos-header">
         <div class="pos-header-left">
             <a href="<?= APP_URL ?>/index.php?page=dashboard" class="pos-back">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                <i data-lucide="arrow-left" style="width:16px;height:16px;"></i>
                 Kembali
             </a>
             <span class="pos-brand">Toko JK POS</span>
         </div>
         <div class="pos-header-right">
             <div style="display:flex;gap:var(--sp-3);font-size:var(--fs-xs);color:var(--text-muted);">
-                <span title="F1: Fokus pencarian"><kbd style="background:var(--bg-hover);padding:1px 6px;border-radius:4px;border:1px solid var(--border);font-family:monospace;font-size:10px;">F1</kbd> Cari</span>
-                <span title="F2: Hapus keranjang"><kbd style="background:var(--bg-hover);padding:1px 6px;border-radius:4px;border:1px solid var(--border);font-family:monospace;font-size:10px;">F2</kbd> Clear</span>
-                <span title="F12: Bayar"><kbd style="background:var(--bg-hover);padding:1px 6px;border-radius:4px;border:1px solid var(--border);font-family:monospace;font-size:10px;">F12</kbd> Bayar</span>
+                <span><span class="kbd">F1</span> Cari</span>
+                <span><span class="kbd">F2</span> Clear</span>
+                <span><span class="kbd">F12</span> Bayar</span>
             </div>
-            <span style="color:var(--border);">|</span>
+            <span style="color:var(--border-active);">|</span>
             <span>👤 <?= htmlspecialchars($user['name']) ?></span>
             <span>🕐 <span id="clock"></span></span>
         </div>
@@ -36,7 +38,7 @@
         <div class="pos-products">
             <div class="pos-search">
                 <div class="pos-search-input">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <i data-lucide="search" style="width:18px;height:18px;"></i>
                     <input type="text" id="searchInput" placeholder="Cari produk atau scan barcode..." autofocus>
                 </div>
                 <div class="pos-categories">
@@ -59,7 +61,7 @@
             </div>
             <div class="pos-cart-items" id="cartItems">
                 <div class="cart-empty">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                    <i data-lucide="shopping-cart" style="width:48px;height:48px;opacity:0.3;margin-bottom:var(--sp-3);"></i>
                     <p style="font-size:var(--fs-sm);">Keranjang kosong</p>
                     <p style="font-size:var(--fs-xs);">Pilih produk untuk mulai transaksi</p>
                 </div>
@@ -88,15 +90,15 @@
 
                 <div class="payment-methods">
                     <button class="pay-method-btn active" data-method="cash" onclick="selectPayment('cash')">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                        <i data-lucide="banknote" style="width:20px;height:20px;margin:0 auto 4px;display:block;"></i>
                         Tunai
                     </button>
                     <button class="pay-method-btn" data-method="qris" onclick="selectPayment('qris')">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                        <i data-lucide="smartphone" style="width:20px;height:20px;margin:0 auto 4px;display:block;"></i>
                         QRIS
                     </button>
                     <button class="pay-method-btn" data-method="transfer" onclick="selectPayment('transfer')">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>
+                        <i data-lucide="landmark" style="width:20px;height:20px;margin:0 auto 4px;display:block;"></i>
                         Transfer
                     </button>
                 </div>
@@ -157,9 +159,9 @@
 <div class="modal-backdrop" id="successModal">
     <div class="success-card">
         <div class="success-icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            <i data-lucide="check" style="width:32px;height:32px;"></i>
         </div>
-        <h2 style="font-size:var(--fs-xl);margin-bottom:var(--sp-2);">Transaksi Berhasil!</h2>
+        <h2 style="font-size:var(--fs-xl);margin-bottom:var(--sp-2);color:var(--text-primary);">Transaksi Berhasil!</h2>
         <p id="successInvoice" style="color:var(--text-secondary);margin-bottom:var(--sp-4);"></p>
         <div id="successDetails" style="text-align:left;margin-bottom:var(--sp-5);"></div>
         <div style="display:flex;gap:var(--sp-3);justify-content:center;">
@@ -178,8 +180,15 @@ let selectedProduct = null;
 let discountType = 'percent';
 let paymentMethod = 'cash';
 let lastTransaction = null;
+let lastCartItems = [];
 
 function formatRp(n) { return 'Rp ' + Number(n).toLocaleString('id-ID'); }
+
+// Init lucide
+document.addEventListener('DOMContentLoaded', function() {
+    if(window.lucide) lucide.createIcons();
+    loadProducts();
+});
 
 // Clock
 function updateClock() {
@@ -209,7 +218,7 @@ function renderProducts() {
         const imgSrc = p.image ? `${APP}/uploads/products/${p.image}` : '';
         const kodeBarang = p.kode_barang || '-';
         return `<div class="product-card ${outOfStock ? 'out-of-stock' : ''}" onclick="openVariantModal(${p.id}, '${p.name.replace(/'/g, "\\'")}', ${p.sell_price})">
-            <div class="product-card-img">${imgSrc ? `<img src="${imgSrc}" alt="${p.name}">` : '👕'}</div>
+            <div class="product-card-img">${imgSrc ? `<img src="${imgSrc}" alt="${p.name}" loading="lazy">` : '👕'}</div>
             <div class="product-card-info">
                 <div class="product-card-code" style="font-size:var(--fs-xs);color:var(--text-muted);font-family:monospace;">${kodeBarang}</div>
                 <div class="product-card-name">${p.name}</div>
@@ -229,7 +238,7 @@ document.querySelectorAll('.cat-btn').forEach(btn => {
     });
 });
 
-// Search
+// Search with debounce
 let searchTimeout;
 document.getElementById('searchInput').addEventListener('input', function() {
     clearTimeout(searchTimeout);
@@ -250,7 +259,6 @@ async function openVariantModal(productId, productName, sellPrice) {
         const res = await fetch(`${APP}/index.php?page=api&action=variants&product_id=${productId}`);
         const variants = await res.json();
 
-        // Group by color
         const colors = {};
         variants.forEach(v => {
             if (!colors[v.color]) colors[v.color] = [];
@@ -279,8 +287,8 @@ async function openVariantModal(productId, productName, sellPrice) {
 }
 
 function getColorHex(color) {
-    const map = {Red:'#e74c3c',Blue:'#3498db',Black:'#2c3e50',White:'#ecf0f1',Pink:'#e91e90',Cream:'#f5e6ca',Grey:'#95a5a6',Brown:'#8b4513',Green:'#27ae60',Yellow:'#f1c40f'};
-    return map[color] || '#888';
+    const map = {Red:'#e74c3c',Blue:'#3498db',Black:'#4a5568',White:'#e2e8f0',Pink:'#e91e90',Cream:'#f5e6ca',Grey:'#718096',Brown:'#8b4513',Green:'#27ae60',Yellow:'#f1c40f',Navy:'#1e3a5f'};
+    return map[color] || '#64748B';
 }
 
 function selectVariant(btn) {
@@ -296,9 +304,7 @@ function selectVariant(btn) {
     document.getElementById('addToCartBtn').disabled = false;
 }
 
-function closeVariantModal() {
-    document.getElementById('variantModal').classList.remove('active');
-}
+function closeVariantModal() { document.getElementById('variantModal').classList.remove('active'); }
 
 function addSelectedToCart() {
     if (!selectedVariant || !selectedProduct) return;
@@ -307,7 +313,7 @@ function addSelectedToCart() {
         if (existing.qty < selectedVariant.stock) {
             existing.qty++;
         } else {
-            alert('Stok tidak cukup!');
+            Swal.fire({ icon:'warning', title:'Stok tidak cukup!', background:'#FFFFFF', color:'#1E293B', confirmButtonColor:'#6366F1' });
             return;
         }
     } else {
@@ -328,8 +334,9 @@ function renderCart() {
     const container = document.getElementById('cartItems');
     if (!cart.length) {
         container.innerHTML = `<div class="cart-empty">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            <i data-lucide="shopping-cart" style="width:48px;height:48px;opacity:0.3;margin-bottom:var(--sp-3);"></i>
             <p style="font-size:var(--fs-sm);">Keranjang kosong</p></div>`;
+        if(window.lucide) lucide.createIcons();
         updateCart();
         return;
     }
@@ -344,10 +351,11 @@ function renderCart() {
             <span class="cart-item-qty">${item.qty}</span>
             <button class="qty-btn" onclick="changeQty(${i},1)">+</button>
             <button class="cart-item-remove" onclick="removeItem(${i})">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                <i data-lucide="trash-2" style="width:16px;height:16px;"></i>
             </button>
         </div>
     </div>`).join('');
+    if(window.lucide) lucide.createIcons();
     updateCart();
 }
 
@@ -355,15 +363,15 @@ function changeQty(index, delta) {
     const item = cart[index];
     const newQty = item.qty + delta;
     if (newQty <= 0) { removeItem(index); return; }
-    if (newQty > item.max_stock) { alert('Stok tidak cukup!'); return; }
+    if (newQty > item.max_stock) {
+        Swal.fire({ icon:'warning', title:'Stok tidak cukup!', background:'#FFFFFF', color:'#1E293B', confirmButtonColor:'#6366F1' });
+        return;
+    }
     item.qty = newQty;
     renderCart();
 }
 
-function removeItem(index) {
-    cart.splice(index, 1);
-    renderCart();
-}
+function removeItem(index) { cart.splice(index, 1); renderCart(); }
 
 function updateCart() {
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
@@ -419,7 +427,6 @@ function openPayment() {
 
     if (paymentMethod === 'cash') {
         document.getElementById('cashPayment').style.display = 'block';
-        // Quick amounts
         const quickAmts = [total, Math.ceil(total/50000)*50000, Math.ceil(total/100000)*100000].filter((v,i,a)=>a.indexOf(v)===i);
         document.getElementById('quickAmounts').innerHTML = quickAmts.map(a => 
             `<button class="btn btn-secondary btn-sm" onclick="document.getElementById('payAmountInput').value=${a};calcChange()">${formatRp(a)}</button>`
@@ -454,9 +461,7 @@ function calcChange() {
     }
 }
 
-function closePaymentModal() {
-    document.getElementById('paymentModal').classList.remove('active');
-}
+function closePaymentModal() { document.getElementById('paymentModal').classList.remove('active'); }
 
 async function processPayment() {
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
@@ -486,7 +491,7 @@ async function processPayment() {
         const data = await res.json();
 
         if (data.error) {
-            alert('Error: ' + data.error);
+            Swal.fire({ icon:'error', title:'Gagal', text:data.error, background:'#FFFFFF', color:'#1E293B', confirmButtonColor:'#6366F1' });
             document.getElementById('confirmPayBtn').disabled = false;
             document.getElementById('confirmPayBtn').textContent = 'Proses Pembayaran';
             return;
@@ -496,7 +501,7 @@ async function processPayment() {
         closePaymentModal();
         showSuccess(data);
     } catch (e) {
-        alert('Terjadi kesalahan: ' + e.message);
+        Swal.fire({ icon:'error', title:'Error', text:e.message, background:'#FFFFFF', color:'#1E293B', confirmButtonColor:'#6366F1' });
         document.getElementById('confirmPayBtn').disabled = false;
         document.getElementById('confirmPayBtn').textContent = 'Proses Pembayaran';
     }
@@ -507,13 +512,12 @@ function showSuccess(data) {
     const methodLabel = {cash:'💵 Tunai', qris:'📱 QRIS', transfer:'🏦 Transfer'}[tx.payment_method];
     document.getElementById('successInvoice').textContent = tx.invoice;
 
-    // Save cart items for receipt printing BEFORE clearing
     lastCartItems = [...cart];
 
-    let html = `<div style="background:var(--bg-card);border-radius:var(--radius-md);padding:var(--sp-4);">`;
+    let html = `<div style="background:var(--bg-elevated);border-radius:var(--radius-md);padding:var(--sp-4);border:1px solid var(--border);">`;
     cart.forEach(item => {
         html += `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:var(--fs-sm);">
-            <span>${item.product_name} (${item.variant_info}) x${item.qty}</span>
+            <span style="color:var(--text-secondary);">${item.product_name} (${item.variant_info}) x${item.qty}</span>
             <span>${formatRp(item.price * item.qty)}</span>
         </div>`;
     });
@@ -539,12 +543,10 @@ function closeSuccess() {
     loadProducts();
 }
 
-let lastCartItems = [];
 function printReceipt() {
     if (!lastTransaction) return;
     const tx = lastTransaction.transaction;
     const store = lastTransaction.store || {};
-    // Use saved cart items, not current cart (which may be cleared)
     const receiptItems = lastCartItems.length > 0 ? lastCartItems : cart;
     let receipt = `<html><head><title>Struk</title><style>
         body{font-family:monospace;font-size:12px;width:280px;margin:0 auto;padding:20px;}
@@ -575,37 +577,32 @@ function printReceipt() {
 
 // Keyboard shortcuts
 document.addEventListener('keydown', function(e) {
-    // F2: Clear cart
     if (e.key === 'F2') {
         e.preventDefault();
-        if (cart.length > 0 && confirm('Hapus semua item di keranjang?')) {
-            cart = [];
-            document.getElementById('discountInput').value = 0;
-            renderCart();
+        if (cart.length > 0) {
+            Swal.fire({
+                title: 'Hapus Keranjang?',
+                text: 'Semua item akan dihapus',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Hapus',
+                cancelButtonText: 'Batal',
+                background: '#FFFFFF',
+                color: '#1E293B',
+                confirmButtonColor: '#DC2626',
+            }).then(r => {
+                if (r.isConfirmed) {
+                    cart = [];
+                    document.getElementById('discountInput').value = 0;
+                    renderCart();
+                }
+            });
         }
     }
-    // F12: Open payment
-    if (e.key === 'F12') {
-        e.preventDefault();
-        if (cart.length > 0) openPayment();
-    }
-    // Escape: Close modals
-    if (e.key === 'Escape') {
-        closeVariantModal();
-        closePaymentModal();
-        if (document.getElementById('successModal').classList.contains('active')) {
-            closeSuccess();
-        }
-    }
-    // F1: Focus search
-    if (e.key === 'F1') {
-        e.preventDefault();
-        document.getElementById('searchInput').focus();
-    }
+    if (e.key === 'F12') { e.preventDefault(); if (cart.length > 0) openPayment(); }
+    if (e.key === 'Escape') { closeVariantModal(); closePaymentModal(); if (document.getElementById('successModal').classList.contains('active')) closeSuccess(); }
+    if (e.key === 'F1') { e.preventDefault(); document.getElementById('searchInput').focus(); }
 });
-
-// Init
-loadProducts();
 </script>
 </body>
 </html>

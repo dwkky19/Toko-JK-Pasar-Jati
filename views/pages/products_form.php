@@ -18,15 +18,19 @@ if ($id) {
 $categories = $db->query("SELECT * FROM categories ORDER BY name")->fetchAll();
 $allSizes = ['XS','S','M','L','XL','XXL','28','29','30','31','32','33','34','36','All Size'];
 $defaultColors = ['Black','White','Red','Blue','Navy','Grey','Cream','Pink','Brown','Green'];
+$colorHex = ['Black'=>'#4a5568','White'=>'#e2e8f0','Red'=>'#e74c3c','Blue'=>'#3498db','Navy'=>'#1e3a5f','Grey'=>'#718096','Cream'=>'#f5e6ca','Pink'=>'#e91e90','Brown'=>'#8b4513','Green'=>'#27ae60'];
 ?>
 
 <div style="max-width:700px;">
     <div style="margin-bottom:var(--sp-4);">
-        <a href="<?= APP_URL ?>/index.php?page=products" class="btn btn-ghost btn-sm">← Kembali ke Produk</a>
+        <a href="<?= APP_URL ?>/index.php?page=products" class="btn btn-ghost btn-sm"><i data-lucide="arrow-left" style="width:14px;height:14px;"></i> Kembali ke Produk</a>
     </div>
 
     <div class="card">
-        <h2 style="font-size:var(--fs-lg);font-weight:700;margin-bottom:var(--sp-5);"><?= $product ? 'Edit Produk' : 'Tambah Produk Baru' ?></h2>
+        <h2 style="font-size:var(--fs-lg);font-weight:700;margin-bottom:var(--sp-5);display:flex;align-items:center;gap:var(--sp-2);">
+            <i data-lucide="<?= $product ? 'pencil' : 'plus-circle' ?>" style="width:20px;height:20px;color:var(--accent);"></i>
+            <?= $product ? 'Edit Produk' : 'Tambah Produk Baru' ?>
+        </h2>
 
         <form method="POST" action="<?= APP_URL ?>/index.php?page=products-form" enctype="multipart/form-data">
             <?= csrfField() ?>
@@ -92,7 +96,7 @@ $defaultColors = ['Black','White','Red','Blue','Navy','Grey','Cream','Pink','Bro
                     <?php
                     $existingSizes = array_unique(array_column($variants, 'size'));
                     foreach ($allSizes as $size): ?>
-                    <label style="display:flex;align-items:center;gap:4px;padding:var(--sp-2) var(--sp-3);background:var(--bg-elevated);border-radius:var(--radius-md);cursor:pointer;font-size:var(--fs-sm);">
+                    <label style="display:flex;align-items:center;gap:4px;padding:var(--sp-2) var(--sp-3);background:var(--bg-elevated);border-radius:var(--radius-md);cursor:pointer;font-size:var(--fs-sm);border:1px solid var(--border);transition:all var(--dur-fast);">
                         <input type="checkbox" name="sizes[]" value="<?= $size ?>" <?= in_array($size, $existingSizes) ? 'checked' : '' ?>> <?= $size ?>
                     </label>
                     <?php endforeach; ?>
@@ -105,8 +109,9 @@ $defaultColors = ['Black','White','Red','Blue','Navy','Grey','Cream','Pink','Bro
                     <?php
                     $existingColors = array_unique(array_column($variants, 'color'));
                     foreach ($defaultColors as $color): ?>
-                    <label style="display:flex;align-items:center;gap:4px;padding:var(--sp-2) var(--sp-3);background:var(--bg-elevated);border-radius:var(--radius-md);cursor:pointer;font-size:var(--fs-sm);">
-                        <input type="checkbox" name="colors[]" value="<?= $color ?>" <?= in_array($color, $existingColors) ? 'checked' : '' ?>> <?= $color ?>
+                    <label style="display:flex;align-items:center;gap:4px;padding:var(--sp-2) var(--sp-3);background:var(--bg-elevated);border-radius:var(--radius-md);cursor:pointer;font-size:var(--fs-sm);border:1px solid var(--border);transition:all var(--dur-fast);">
+                        <input type="checkbox" name="colors[]" value="<?= $color ?>" <?= in_array($color, $existingColors) ? 'checked' : '' ?>>
+                        <span class="color-dot" style="background:<?= $colorHex[$color] ?? '#64748B' ?>;"></span> <?= $color ?>
                     </label>
                     <?php endforeach; ?>
                 </div>
@@ -130,7 +135,7 @@ $defaultColors = ['Black','White','Red','Blue','Navy','Grey','Cream','Pink','Bro
 
             <div style="display:flex;gap:var(--sp-3);justify-content:flex-end;margin-top:var(--sp-6);">
                 <a href="<?= APP_URL ?>/index.php?page=products" class="btn btn-secondary">Batal</a>
-                <button type="submit" class="btn btn-primary">💾 <?= $product ? 'Update' : 'Simpan' ?> Produk</button>
+                <button type="submit" class="btn btn-primary"><i data-lucide="save" style="width:16px;height:16px;"></i> <?= $product ? 'Update' : 'Simpan' ?> Produk</button>
             </div>
         </form>
     </div>

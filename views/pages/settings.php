@@ -7,7 +7,7 @@ foreach ($stmt->fetchAll() as $s) $settings[$s['setting_key']] = $s['setting_val
 
 <div style="max-width:600px;">
     <div class="card">
-        <h3 style="font-weight:700;margin-bottom:var(--sp-5);">⚙️ Pengaturan Toko</h3>
+        <h3 style="font-weight:700;margin-bottom:var(--sp-5);display:flex;align-items:center;gap:var(--sp-2);"><i data-lucide="settings" style="width:20px;height:20px;color:var(--accent);"></i> Pengaturan Toko</h3>
         <form method="POST" action="<?= APP_URL ?>/index.php?page=settings">
             <?= csrfField() ?>
             <div class="form-group">
@@ -30,13 +30,13 @@ foreach ($stmt->fetchAll() as $s) $settings[$s['setting_key']] = $s['setting_val
                 <label class="form-label">Batas Minimum Stok Default</label>
                 <input type="number" name="default_min_stock" class="form-input" value="<?= htmlspecialchars($settings['default_min_stock'] ?? '5') ?>" min="1">
             </div>
-            <button type="submit" class="btn btn-primary">💾 Simpan Pengaturan</button>
+            <button type="submit" class="btn btn-primary"><i data-lucide="save" style="width:16px;height:16px;"></i> Simpan Pengaturan</button>
         </form>
     </div>
 
     <?php if (isAdmin()): ?>
     <div class="card mt-6">
-        <h3 style="font-weight:700;margin-bottom:var(--sp-5);">👤 Profil Saya</h3>
+        <h3 style="font-weight:700;margin-bottom:var(--sp-5);display:flex;align-items:center;gap:var(--sp-2);"><i data-lucide="user" style="width:20px;height:20px;color:var(--accent);"></i> Profil Saya</h3>
         <div style="display:flex;align-items:center;gap:var(--sp-4);margin-bottom:var(--sp-4);">
             <div class="user-avatar" style="width:56px;height:56px;font-size:var(--fs-xl);"><?= strtoupper(substr(currentUser()['name'], 0, 1)) ?></div>
             <div>
