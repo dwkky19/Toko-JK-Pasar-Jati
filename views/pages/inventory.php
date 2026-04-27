@@ -32,8 +32,8 @@ $movements = $db->query("SELECT sm.*, pv.sku, pv.size, pv.color, p.name as produ
             <tr>
                 <td class="font-bold"><?= htmlspecialchars($v['product_name']) ?></td>
                 <td class="text-sm text-secondary"><?= htmlspecialchars($v['sku']) ?></td>
-                <td><?= $v['size'] ?></td>
-                <td><span class="color-dot" style="background:<?= getColorHexPHP($v['color']) ?>;vertical-align:middle;margin-right:4px;"></span><?= $v['color'] ?></td>
+                <td><?= e($v['size']) ?></td>
+                <td><span class="color-dot" style="background:<?= getColorHexPHP($v['color']) ?>;vertical-align:middle;margin-right:4px;"></span><?= e($v['color']) ?></td>
                 <td class="font-bold text-<?= $status ?>"><?= $v['stock'] ?></td>
                 <td class="text-secondary"><?= $v['min_stock'] ?></td>
                 <td><span class="badge badge-<?= $status ?> <?= $status==='danger'?'pulse':'' ?>"><?= $statusText ?></span></td>
@@ -56,7 +56,7 @@ $movements = $db->query("SELECT sm.*, pv.sku, pv.size, pv.color, p.name as produ
                 <select name="variant_id" class="form-select" required>
                     <option value="">-- Pilih Produk --</option>
                     <?php foreach ($variants as $v): ?>
-                    <option value="<?= $v['id'] ?>"><?= $v['product_name'] ?> — <?= $v['color'] ?> <?= $v['size'] ?> (Stok: <?= $v['stock'] ?>)</option>
+                    <option value="<?= (int)$v['id'] ?>"><?= e($v['product_name']) ?> — <?= e($v['color']) ?> <?= e($v['size']) ?> (Stok: <?= (int)$v['stock'] ?>)</option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -96,7 +96,7 @@ $movements = $db->query("SELECT sm.*, pv.sku, pv.size, pv.color, p.name as produ
                 <select name="variant_id" class="form-select" required>
                     <option value="">-- Pilih Produk --</option>
                     <?php foreach ($variants as $v): if ($v['stock'] > 0): ?>
-                    <option value="<?= $v['id'] ?>"><?= $v['product_name'] ?> — <?= $v['color'] ?> <?= $v['size'] ?> (Stok: <?= $v['stock'] ?>)</option>
+                    <option value="<?= (int)$v['id'] ?>"><?= e($v['product_name']) ?> — <?= e($v['color']) ?> <?= e($v['size']) ?> (Stok: <?= (int)$v['stock'] ?>)</option>
                     <?php endif; endforeach; ?>
                 </select>
             </div>
@@ -129,11 +129,11 @@ $movements = $db->query("SELECT sm.*, pv.sku, pv.size, pv.color, p.name as produ
             <tr>
                 <td class="text-sm"><?= date('d/m/Y H:i', strtotime($m['created_at'])) ?></td>
                 <td class="font-bold"><?= htmlspecialchars($m['product_name']) ?></td>
-                <td class="text-sm"><?= $m['color'] ?> - <?= $m['size'] ?></td>
+                <td class="text-sm"><?= e($m['color']) ?> - <?= e($m['size']) ?></td>
                 <td><span class="badge <?= $m['type']==='in'?'badge-success':'badge-danger' ?>"><?= $m['type']==='in'?'📥 Masuk':'📤 Keluar' ?></span></td>
                 <td class="font-bold"><?= $m['type']==='in'?'+':'-' ?><?= $m['quantity'] ?></td>
                 <td class="text-sm"><?= htmlspecialchars($m['user_name']) ?></td>
-                <td class="text-sm text-secondary"><?= htmlspecialchars($m['reason'] ?? '') ?><?= $m['supplier_name'] ? ' ('.$m['supplier_name'].')' : '' ?></td>
+                <td class="text-sm text-secondary"><?= e($m['reason'] ?? '') ?><?= $m['supplier_name'] ? ' (' . e($m['supplier_name']) . ')' : '' ?></td>
             </tr>
             <?php endforeach; ?>
             <?php if (empty($movements)): ?>

@@ -85,7 +85,7 @@ $colorHex = ['Black'=>'#4a5568','White'=>'#e2e8f0','Red'=>'#e74c3c','Blue'=>'#34
             <div class="form-group">
                 <label class="form-label">Foto Produk</label>
                 <?php if ($product && $product['image']): ?>
-                <div style="margin-bottom:var(--sp-2);"><img src="<?= APP_URL ?>/uploads/products/<?= $product['image'] ?>" style="width:80px;height:80px;object-fit:cover;border-radius:var(--radius-md);border:1px solid var(--border);"></div>
+                <div style="margin-bottom:var(--sp-2);"><img src="<?= APP_URL ?>/uploads/products/<?= e($product['image']) ?>" style="width:80px;height:80px;object-fit:cover;border-radius:var(--radius-md);border:1px solid var(--border);"></div>
                 <?php endif; ?>
                 <input type="file" name="image" class="form-input" accept="image/*">
             </div>
@@ -97,7 +97,7 @@ $colorHex = ['Black'=>'#4a5568','White'=>'#e2e8f0','Red'=>'#e74c3c','Blue'=>'#34
                     $existingSizes = array_unique(array_column($variants, 'size'));
                     foreach ($allSizes as $size): ?>
                     <label style="display:flex;align-items:center;gap:4px;padding:var(--sp-2) var(--sp-3);background:var(--bg-elevated);border-radius:var(--radius-md);cursor:pointer;font-size:var(--fs-sm);border:1px solid var(--border);transition:all var(--dur-fast);">
-                        <input type="checkbox" name="sizes[]" value="<?= $size ?>" <?= in_array($size, $existingSizes) ? 'checked' : '' ?>> <?= $size ?>
+                        <input type="checkbox" name="sizes[]" value="<?= e($size) ?>" <?= in_array($size, $existingSizes) ? 'checked' : '' ?>> <?= e($size) ?>
                     </label>
                     <?php endforeach; ?>
                 </div>
@@ -111,7 +111,7 @@ $colorHex = ['Black'=>'#4a5568','White'=>'#e2e8f0','Red'=>'#e74c3c','Blue'=>'#34
                     foreach ($defaultColors as $color): ?>
                     <label style="display:flex;align-items:center;gap:4px;padding:var(--sp-2) var(--sp-3);background:var(--bg-elevated);border-radius:var(--radius-md);cursor:pointer;font-size:var(--fs-sm);border:1px solid var(--border);transition:all var(--dur-fast);">
                         <input type="checkbox" name="colors[]" value="<?= $color ?>" <?= in_array($color, $existingColors) ? 'checked' : '' ?>>
-                        <span class="color-dot" style="background:<?= $colorHex[$color] ?? '#64748B' ?>;"></span> <?= $color ?>
+                        <span class="color-dot" style="background:<?= $colorHex[$color] ?? '#64748B' ?>;"></span> <?= e($color) ?>
                     </label>
                     <?php endforeach; ?>
                 </div>
@@ -125,7 +125,7 @@ $colorHex = ['Black'=>'#4a5568','White'=>'#e2e8f0','Red'=>'#e74c3c','Blue'=>'#34
                         <thead><tr><th>SKU</th><th>Ukuran</th><th>Warna</th><th>Stok</th></tr></thead>
                         <tbody>
                         <?php foreach ($variants as $v): ?>
-                        <tr><td class="text-sm"><?= htmlspecialchars($v['sku']) ?></td><td><?= $v['size'] ?></td><td><?= $v['color'] ?></td><td class="font-bold"><?= $v['stock'] ?></td></tr>
+                        <tr><td class="text-sm"><?= e($v['sku']) ?></td><td><?= e($v['size']) ?></td><td><?= e($v['color']) ?></td><td class="font-bold"><?= (int)$v['stock'] ?></td></tr>
                         <?php endforeach; ?>
                         </tbody>
                     </table>

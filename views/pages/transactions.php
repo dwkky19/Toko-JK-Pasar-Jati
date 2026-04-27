@@ -26,7 +26,9 @@ $countStmt->execute($params);
 $totalItems = $countStmt->fetchColumn();
 $totalPages = ceil($totalItems / $perPage);
 
-$stmt = $db->prepare("SELECT t.*, u.name as cashier FROM transactions t JOIN users u ON t.user_id = u.id WHERE $where ORDER BY t.created_at DESC LIMIT $perPage OFFSET $offset");
+$stmt = $db->prepare("SELECT t.*, u.name as cashier FROM transactions t JOIN users u ON t.user_id = u.id WHERE $where ORDER BY t.created_at DESC LIMIT ? OFFSET ?");
+$params[] = $perPage;
+$params[] = $offset;
 $stmt->execute($params);
 $transactions = $stmt->fetchAll();
 ?>
@@ -75,11 +77,11 @@ $transactions = $stmt->fetchAll();
                     $methods = ['cash' => '💵 Tunai', 'qris' => '📱 QRIS', 'transfer' => '🏦 Transfer'];
                     ?>
                     <tr>
-                        <td class="font-bold"><?= $t['invoice_number'] ?></td>
+                        <td class="font-bold"><?= e($t['invoice_number']) ?></td>
                         <td class="text-sm text-secondary"><?= date('d/m/Y H:i', strtotime($t['created_at'])) ?></td>
                         <td><?= htmlspecialchars($t['cashier']) ?></td>
                         <td class="font-bold text-accent"><?= formatRupiah($t['total']) ?></td>
-                        <td><?= $methods[$t['payment_method']] ?? $t['payment_method'] ?></td>
+                        <td><?= $methods[$t['payment_method']] ?? e($t['payment_method']) ?></td>
                         <td>
                             <?php if ($t['status'] === 'voided'): ?>
                                 <span class="badge badge-danger">Void</span>

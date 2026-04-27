@@ -29,7 +29,11 @@ function handlePostAction($page, $action) {
 }
 
 function handleProductForm($db, $action) {
+    // --- Security: Only admin can add/edit products ---
+    requireAdmin();
+
     $id = $_POST['id'] ?? null;
+    if ($id !== null) { $id = (int)$id; }
     $isEdit = !empty($id);
     $name = trim($_POST['name'] ?? '');
     $kode_barang = trim($_POST['kode_barang'] ?? '');
@@ -41,24 +45,35 @@ function handleProductForm($db, $action) {
     $sizes = $_POST['sizes'] ?? [];
     $colors = $_POST['colors'] ?? [];
 
+    // --- Security: Validate arrays ---
+    if (!is_array($sizes)) $sizes = [];
+    if (!is_array($colors)) $colors = [];
+
     if (empty($name) || empty($kode_barang) || $category_id === 0 || $cost_price <= 0 || $sell_price <= 0) {
         setFlash('error', 'Semua field wajib harus diisi (termasuk Kode Barang).');
         header('Location: ' . APP_URL . '/index.php?page=products-form' . ($id ? '&id=' . $id : ''));
         exit;
     }
 
-    // Handle image upload
+    // --- Security: Validate name length ---
+    if (strlen($name) > 200 || strlen($kode_barang) > 50 || strlen($brand) > 100) {
+        setFlash('error', 'Panjang input melebihi batas.');
+        header('Location: ' . APP_URL . '/index.php?page=products-form' . ($id ? '&id=' . $id : ''));
+        exit;
+    }
+
+    // Handle image upload with security hardening
     $image = null;
     if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-        $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
-        $allowed = ['jpg', 'jpeg', 'png', 'webp'];
-        if (in_array(strtolower($ext), $allowed)) {
-            $filename = 'product_' . time() . '.' . $ext;
-            $uploadDir = __DIR__ . '/../uploads/products/';
-            if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
-            move_uploaded_file($_FILES['image']['tmp_name'], $uploadDir . $filename);
-            $image = $filename;
+        // --- Security: Use centralized secure upload processor ---
+        $uploadDir = __DIR__ . '/../uploads/products/';
+        $result = processUploadedImage($_FILES['image']['tmp_name'], $uploadDir, 'product');
+        if (isset($result['error'])) {
+            setFlash('error', $result['error']);
+            header('Location: ' . APP_URL . '/index.php?page=products-form' . ($id ? '&id=' . $id : ''));
+            exit;
         }
+        $image = $result['filename'];
     }
 
     try {
@@ -100,6 +115,11 @@ function handleProductForm($db, $action) {
         if (!empty($sizes) && !empty($colors)) {
             foreach ($sizes as $size) {
                 foreach ($colors as $color) {
+                    // --- Security: Sanitize size and color values ---
+                    $size = trim($size);
+                    $color = trim($color);
+                    if (empty($size) || empty($color) || strlen($size) > 10 || strlen($color) > 50) continue;
+
                     $key = $size . '-' . $color;
                     if (isset($existingVariants[$key])) {
                         unset($existingVariants[$key]);
@@ -113,6 +133,7 @@ function handleProductForm($db, $action) {
                         $sku .= '-' . rand(100, 999);
                     }
                     $stock = (int)($_POST['stock_' . $size . '_' . $color] ?? 0);
+                    if ($stock < 0) $stock = 0;
                     $db->prepare("INSERT INTO product_variants (product_id, sku, size, color, stock) VALUES (?,?,?,?,?)")
                         ->execute([$id, $sku, $size, $color, $stock]);
                 }
@@ -136,7 +157,9 @@ function handleProductForm($db, $action) {
         setFlash('success', $isEdit ? 'Produk berhasil diupdate.' : 'Produk berhasil ditambahkan.');
     } catch (Exception $e) {
         $db->rollBack();
-        setFlash('error', 'Gagal menyimpan produk: ' . $e->getMessage());
+        // --- Security: Don't expose internal error details ---
+        error_log('Product save error: ' . $e->getMessage());
+        setFlash('error', 'Gagal menyimpan produk. Silakan coba lagi.');
     }
 
     header('Location: ' . APP_URL . '/index.php?page=products');
@@ -144,6 +167,9 @@ function handleProductForm($db, $action) {
 }
 
 function handleProducts($db, $action) {
+    // --- Security: Only admin can delete products ---
+    requireAdmin();
+
     if ($action === 'delete') {
         $id = (int)($_POST['id'] ?? 0);
         if ($id > 0) {
@@ -163,14 +189,46 @@ function handleInventory($db, $action) {
     $reason = trim($_POST['reason'] ?? '');
     $supplier_id = (int)($_POST['supplier_id'] ?? 0) ?: null;
 
+    // --- Security: Validate inventory type whitelist ---
+    if (!in_array($type, ['in', 'out'])) {
+        setFlash('error', 'Tipe stok tidak valid.');
+        header('Location: ' . APP_URL . '/index.php?page=inventory');
+        exit;
+    }
+
     if ($variant_id <= 0 || $quantity <= 0) {
         setFlash('error', 'Varian dan jumlah harus diisi.');
         header('Location: ' . APP_URL . '/index.php?page=inventory');
         exit;
     }
 
+    // --- Security: Validate quantity range ---
+    if ($quantity > 99999) {
+        setFlash('error', 'Jumlah tidak valid.');
+        header('Location: ' . APP_URL . '/index.php?page=inventory');
+        exit;
+    }
+
+    // --- Security: Validate reason length ---
+    if (strlen($reason) > 255) {
+        $reason = substr($reason, 0, 255);
+    }
+
     try {
         $db->beginTransaction();
+
+        // --- Security: Verify variant exists before updating ---
+        $varCheck = $db->prepare("SELECT id, stock FROM product_variants WHERE id = ?");
+        $varCheck->execute([$variant_id]);
+        $variantRecord = $varCheck->fetch();
+        if (!$variantRecord) {
+            throw new Exception('Varian tidak ditemukan.');
+        }
+
+        // --- Security: For stock out, verify sufficient stock ---
+        if ($type === 'out' && $variantRecord['stock'] < $quantity) {
+            throw new Exception('Stok tidak mencukupi.');
+        }
 
         // Insert movement
         $db->prepare("INSERT INTO stock_movements (variant_id, type, quantity, reason, supplier_id, user_id) VALUES (?,?,?,?,?,?)")
@@ -185,7 +243,8 @@ function handleInventory($db, $action) {
         setFlash('success', 'Stok berhasil di' . ($type === 'in' ? 'tambahkan' : 'kurangkan') . '.');
     } catch (Exception $e) {
         $db->rollBack();
-        setFlash('error', 'Gagal update stok: ' . $e->getMessage());
+        setFlash('error', 'Gagal update stok. Silakan coba lagi.');
+        error_log('Inventory error: ' . $e->getMessage());
     }
 
     header('Location: ' . APP_URL . '/index.php?page=inventory&tab=history');
@@ -194,6 +253,12 @@ function handleInventory($db, $action) {
 
 function handleUsers($db, $action) {
     requireAdmin();
+
+    // --- Security: Whitelist valid actions ---
+    if (!in_array($action, ['delete', 'save'])) {
+        header('Location: ' . APP_URL . '/index.php?page=users');
+        exit;
+    }
 
     if ($action === 'delete') {
         $id = (int)($_POST['id'] ?? 0);
@@ -209,8 +274,45 @@ function handleUsers($db, $action) {
         $role = $_POST['role'] ?? 'kasir';
         $status = $_POST['status'] ?? 'active';
 
+        // --- Security: Validate role whitelist ---
+        if (!in_array($role, ['admin', 'kasir'])) {
+            setFlash('error', 'Role tidak valid.');
+            header('Location: ' . APP_URL . '/index.php?page=users');
+            exit;
+        }
+
+        // --- Security: Validate status whitelist ---
+        if (!in_array($status, ['active', 'inactive'])) {
+            setFlash('error', 'Status tidak valid.');
+            header('Location: ' . APP_URL . '/index.php?page=users');
+            exit;
+        }
+
         if (empty($name) || empty($username)) {
             setFlash('error', 'Nama dan username harus diisi.');
+            header('Location: ' . APP_URL . '/index.php?page=users');
+            exit;
+        }
+
+        // --- Security: Validate username format ---
+        if (!preg_match('/^[a-zA-Z0-9_]{3,50}$/', $username)) {
+            setFlash('error', 'Username hanya boleh huruf, angka, dan underscore (3-50 karakter).');
+            header('Location: ' . APP_URL . '/index.php?page=users');
+            exit;
+        }
+
+        // --- Security: Validate name length ---
+        if (strlen($name) > 100) {
+            setFlash('error', 'Nama terlalu panjang (maks 100 karakter).');
+            header('Location: ' . APP_URL . '/index.php?page=users');
+            exit;
+        }
+
+        // --- Security: Check for duplicate username ---
+        $dupCheck = $db->prepare("SELECT id FROM users WHERE username = ? AND id != ?");
+        $dupCheck->execute([$username, $id]);
+        if ($dupCheck->fetch()) {
+            setFlash('error', 'Username sudah digunakan.');
             header('Location: ' . APP_URL . '/index.php?page=users');
             exit;
         }
@@ -220,8 +322,15 @@ function handleUsers($db, $action) {
             $sql = "UPDATE users SET name=?, username=?, role=?, status=?";
             $params = [$name, $username, $role, $status];
             if (!empty($password)) {
+                // --- Security: Password complexity validation ---
+                $pwdError = validatePasswordComplexity($password);
+                if ($pwdError !== null) {
+                    setFlash('error', $pwdError);
+                    header('Location: ' . APP_URL . '/index.php?page=users');
+                    exit;
+                }
                 $sql .= ", password=?";
-                $params[] = password_hash($password, PASSWORD_DEFAULT);
+                $params[] = securePasswordHash($password);
             }
             $sql .= " WHERE id=?";
             $params[] = $id;
@@ -234,7 +343,14 @@ function handleUsers($db, $action) {
                 header('Location: ' . APP_URL . '/index.php?page=users');
                 exit;
             }
-            $hashed = password_hash($password, PASSWORD_DEFAULT);
+            // --- Security: Password complexity validation ---
+            $pwdError = validatePasswordComplexity($password);
+            if ($pwdError !== null) {
+                setFlash('error', $pwdError);
+                header('Location: ' . APP_URL . '/index.php?page=users');
+                exit;
+            }
+            $hashed = securePasswordHash($password);
             $db->prepare("INSERT INTO users (name, username, password, role, status) VALUES (?,?,?,?,?)")
                 ->execute([$name, $username, $hashed, $role, $status]);
             setFlash('success', 'Pengguna berhasil ditambahkan.');
@@ -251,6 +367,8 @@ function handleSettings($db) {
     foreach ($keys as $key) {
         if (isset($_POST[$key])) {
             $val = trim($_POST[$key]);
+            // --- Security: Limit setting value length ---
+            if (strlen($val) > 500) { $val = substr($val, 0, 500); }
             $db->prepare("INSERT INTO settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = ?")
                 ->execute([$key, $val, $val]);
         }
@@ -261,6 +379,12 @@ function handleSettings($db) {
 }
 
 function handleTransactions($db, $action) {
+    // --- Security: Whitelist action ---
+    if ($action !== 'void') {
+        header('Location: ' . APP_URL . '/index.php?page=transactions');
+        exit;
+    }
+
     if ($action === 'void' && isAdmin()) {
         $id = (int)($_POST['id'] ?? 0);
         if ($id > 0) {
@@ -291,7 +415,7 @@ function handleTransactions($db, $action) {
                 setFlash('success', 'Transaksi berhasil dibatalkan dan stok dikembalikan.');
             } catch (Exception $e) {
                 $db->rollBack();
-                setFlash('error', 'Gagal membatalkan transaksi: ' . $e->getMessage());
+                setFlash('error', 'Gagal membatalkan transaksi: ' . e($e->getMessage()));
             }
         }
     }

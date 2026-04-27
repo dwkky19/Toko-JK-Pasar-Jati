@@ -1,0 +1,99 @@
+# ============================================
+# SECURITY — Apache Configuration
+# Toko JK Pasar Jati — POS System
+# ============================================
+
+# Disable directory listing
+Options -Indexes
+
+# Protect sensitive files from direct access
+<FilesMatch "^(config\.php|database\.sql)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Block access to hidden files (.git, .github, .env, etc.)
+<FilesMatch "^\.">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Block backup and sensitive file extensions
+<FilesMatch "\.(bak|sql|log|env|ini|conf|dist|orig|save|swp|swo)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Block direct access to action files
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Block direct access to /actions/ directory
+    RewriteCond %{REQUEST_URI} ^/penjualan/actions/ [NC]
+    RewriteRule .* - [F,L]
+
+    # Block direct access to /views/ directory
+    RewriteCond %{REQUEST_URI} ^/penjualan/views/ [NC]
+    RewriteRule .* - [F,L]
+
+    # Block direct access to config.php
+    RewriteCond %{REQUEST_URI} ^/penjualan/config\.php$ [NC]
+    RewriteRule .* - [F,L]
+
+    # Block direct access to database.sql
+    RewriteCond %{REQUEST_URI} ^/penjualan/database\.sql$ [NC]
+    RewriteRule .* - [F,L]
+</IfModule>
+
+# Prevent PHP execution in uploads directory
+<IfModule mod_rewrite.c>
+    # Block ANY PHP-like file in uploads (including double extensions)
+    RewriteCond %{REQUEST_URI} ^/penjualan/uploads/.*\.ph(p[0-9]?|tml|ar) [NC]
+    RewriteRule .* - [F,L]
+</IfModule>
+
+# Security Headers (applied globally if mod_headers is available)
+<IfModule mod_headers.c>
+    # Prevent clickjacking
+    Header always set X-Frame-Options "DENY"
+    # Prevent MIME type sniffing
+    Header always set X-Content-Type-Options "nosniff"
+    # XSS Protection for legacy browsers
+    Header always set X-XSS-Protection "1; mode=block"
+    # Referrer Policy
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    # Permissions Policy
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+    # Remove server signature
+    Header unset X-Powered-By
+    Header unset Server
+    # HSTS (only enable if using HTTPS)
+    # Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+</IfModule>
+
+# Disable server signature
+ServerSignature Off
+
+# Limit upload size to 2MB
+<IfModule mod_php.c>
+    php_value upload_max_filesize 2M
+    php_value post_max_size 2M
+    # Disable displaying errors to users
+    php_flag display_errors off
+    php_flag log_errors on
+</IfModule>

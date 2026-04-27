@@ -2,6 +2,9 @@
 $db = getDB();
 $tab = $_GET['tab'] ?? 'sales';
 $period = $_GET['period'] ?? '30';
+// --- Security: Whitelist allowed period values ---
+$allowedPeriods = ['7', '30', '90'];
+if (!in_array($period, $allowedPeriods)) { $period = '30'; }
 $periodDays = (int)$period;
 
 // Sales data
@@ -201,7 +204,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <tr>
                 <td class="font-bold text-accent"><?= $i+1 ?></td>
                 <td class="font-bold"><?= htmlspecialchars($item['product_name']) ?></td>
-                <td class="text-sm text-secondary"><?= $item['variant_info'] ?></td>
+                <td class="text-sm text-secondary"><?= e($item['variant_info']) ?></td>
                 <td class="font-bold"><?= $item['qty'] ?> pcs</td>
                 <td class="text-accent"><?= formatRupiah($item['revenue']) ?></td>
             </tr>

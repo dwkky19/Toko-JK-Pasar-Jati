@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login — Toko JK Pasar Jati</title>
     <link rel="stylesheet" href="<?= APP_URL ?>/assets/css/app.css?v=<?= time() ?>">
-    <script src="https://cdn.jsdelivr.net/npm/lucide@0.344.0/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.344.0/dist/umd/lucide.min.js" crossorigin="anonymous"></script>
 </head>
 <body>
 <div class="login-page">
@@ -23,7 +23,7 @@
         </div>
         <?php endif; ?>
 
-        <form method="POST" action="<?= APP_URL ?>/index.php?page=login" id="loginForm">
+        <form method="POST" action="<?= APP_URL ?>/index.php?page=login" id="loginForm" autocomplete="off">
             <?= csrfField() ?>
             <div class="form-group">
                 <label class="form-label">Username</label>
@@ -48,7 +48,7 @@
         </form>
 
         <p style="text-align:center; margin-top: 1.5rem; font-size: 0.75rem; color: var(--text-muted);">
-            Demo: admin / admin123 &nbsp;|&nbsp; kasir / kasir123
+            &copy; <?= date('Y') ?> Toko JK Pasar Jati
         </p>
     </div>
 </div>

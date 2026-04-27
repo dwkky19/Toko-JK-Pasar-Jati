@@ -28,7 +28,11 @@ $users = $db->query("SELECT * FROM users ORDER BY created_at DESC")->fetchAll();
             <td class="text-sm text-secondary"><?= date('d/m/Y', strtotime($u['created_at'])) ?></td>
             <td>
                 <div style="display:flex;gap:var(--sp-2);">
-                    <button class="btn btn-ghost btn-sm" onclick="editUser(<?= htmlspecialchars(json_encode($u)) ?>)"><i data-lucide="pencil" style="width:14px;height:14px;"></i></button>
+                    <?php
+                    // Security: Remove password hash before sending to client
+                    $safeUser = ['id' => $u['id'], 'name' => $u['name'], 'username' => $u['username'], 'role' => $u['role'], 'status' => $u['status']];
+                    ?>
+                    <button class="btn btn-ghost btn-sm" onclick='editUser(<?= json_encode($safeUser, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)'><i data-lucide="pencil" style="width:14px;height:14px;"></i></button>
                     <?php if ($u['id'] !== $_SESSION['user_id']): ?>
                     <form method="POST" action="<?= APP_URL ?>/index.php?page=users&action=delete" onsubmit="return confirm('Yakin hapus pengguna ini?')">
                         <?= csrfField() ?>

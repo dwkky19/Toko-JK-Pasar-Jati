@@ -19,7 +19,9 @@ $totalPages = ceil($totalItems / $perPage);
 $stmt = $db->prepare("SELECT p.*, c.name as category_name,
     (SELECT SUM(pv.stock) FROM product_variants pv WHERE pv.product_id = p.id) as total_stock,
     (SELECT COUNT(*) FROM product_variants pv WHERE pv.product_id = p.id) as variant_count
-    FROM products p JOIN categories c ON p.category_id = c.id WHERE $where ORDER BY p.created_at DESC LIMIT $perPage OFFSET $offset");
+    FROM products p JOIN categories c ON p.category_id = c.id WHERE $where ORDER BY p.created_at DESC LIMIT ? OFFSET ?");
+$params[] = $perPage;
+$params[] = $offset;
 $stmt->execute($params);
 $products = $stmt->fetchAll();
 $categories = $db->query("SELECT * FROM categories ORDER BY name")->fetchAll();
@@ -74,7 +76,7 @@ $categories = $db->query("SELECT * FROM categories ORDER BY name")->fetchAll();
                 <td>
                     <div style="display:flex;align-items:center;gap:var(--sp-3);">
                         <div style="width:40px;height:40px;background:var(--bg-elevated);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;overflow:hidden;">
-                            <?php if($p['image']): ?><img src="<?= APP_URL ?>/uploads/products/<?= $p['image'] ?>" style="width:100%;height:100%;object-fit:cover;" loading="lazy"><?php else: ?>👕<?php endif; ?>
+                            <?php if($p['image']): ?><img src="<?= APP_URL ?>/uploads/products/<?= e($p['image']) ?>" style="width:100%;height:100%;object-fit:cover;" loading="lazy"><?php else: ?>👕<?php endif; ?>
                         </div>
                         <div>
                             <div class="font-bold"><?= htmlspecialchars($p['name']) ?></div>

@@ -1,0 +1,66 @@
+# ============================================
+# SECURITY — Uploads Directory Protection
+# Toko JK Pasar Jati — POS System
+# ============================================
+
+# Block ALL PHP execution in uploads directory
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+
+# Block ALL PHP files (including disguised ones like .php.jpg, .phtml, .php5, etc.)
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # Block any file containing .php anywhere in the name
+    RewriteRule \.ph(p[0-9]?|tml|ar)$ - [F,L]
+    # Block .phtml, .shtml, .cgi, .pl, .py, .rb, .sh, .asp, .aspx, .jsp
+    RewriteRule \.(shtml|cgi|pl|py|rb|sh|asp|aspx|jsp)$ - [F,L]
+</IfModule>
+
+# Only allow specific image file types — DENY everything else
+<FilesMatch "\.(?i:jpe?g|png|webp|gif)$">
+    # Allow access to image files
+    <IfModule mod_authz_core.c>
+        Require all granted
+    </IfModule>
+</FilesMatch>
+
+# Deny access to ALL other file types
+<FilesMatch "\.(?!(?i:jpe?g|png|webp|gif)$)">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Block files with no extension
+<FilesMatch "^[^.]+$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+</FilesMatch>
+
+# Prevent directory listing
+Options -Indexes -ExecCGI
+
+# Force image content types - prevent MIME sniffing
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    # Prevent the file from being interpreted as anything other than declared content type
+    Header always set Content-Disposition "inline"
+</IfModule>
+
+# Set correct MIME types for images only
+AddType image/jpeg .jpg .jpeg
+AddType image/png .png
+AddType image/webp .webp
+AddType image/gif .gif
+
+# Remove handler for PHP files in this directory
+<IfModule mod_php.c>
+    RemoveHandler .php .phtml .php3 .php4 .php5 .phps
+    RemoveType .php .phtml .php3 .php4 .php5 .phps
+</IfModule>

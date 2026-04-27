@@ -114,6 +114,12 @@ else $greeting = 'Selamat Malam';
 <script>
 const APP = '<?= APP_URL ?>';
 function formatRp(n) { return 'Rp ' + Number(n).toLocaleString('id-ID'); }
+function escapeHtml(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
 
 function animateValue(el, start, end, duration, formatter) {
     if (start === end) { el.textContent = formatter ? formatter(end) : end; return; }
@@ -190,7 +196,7 @@ async function loadDashboard() {
             const colors = ['#6366F1','#8B5CF6','#A855F7','#3B82F6','#059669'];
             topHtml += `<div style="margin-bottom:var(--sp-3);">
                 <div style="display:flex;justify-content:space-between;font-size:var(--fs-sm);margin-bottom:4px;">
-                    <span style="color:var(--text-secondary);">${i+1}. ${p.product_name}</span>
+                    <span style="color:var(--text-secondary);">${i+1}. ${escapeHtml(p.product_name)}</span>
                     <span style="color:${colors[i]};font-weight:700;">${p.qty} pcs</span>
                 </div>
                 <div style="height:6px;background:var(--bg-elevated);border-radius:var(--radius-full);overflow:hidden;">
@@ -207,7 +213,7 @@ async function loadDashboard() {
             const method = {cash:'💵 Tunai', qris:'📱 QRIS', transfer:'🏦 Transfer'}[t.payment_method] || t.payment_method;
             const statusBadge = t.status === 'voided' ? '<span class="badge badge-danger">Void</span>' : '';
             txHtml += `<tr>
-                <td><span class="font-bold">${t.invoice_number}</span></td>
+                <td><span class="font-bold">${escapeHtml(t.invoice_number)}</span></td>
                 <td class="text-secondary text-sm">${dt.toLocaleDateString('id-ID')} ${dt.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}</td>
                 <td class="text-accent font-bold">${formatRp(t.total)}</td>
                 <td>${method} ${statusBadge}</td>
@@ -223,8 +229,8 @@ async function loadDashboard() {
             const statusText = item.stock === 0 ? '⛔ Habis' : '⚠️ Low';
             lsHtml += `<div style="display:flex;justify-content:space-between;align-items:center;padding:var(--sp-2) 0;border-bottom:1px solid var(--border);">
                 <div>
-                    <div style="font-size:var(--fs-sm);font-weight:600;">${item.product_name}</div>
-                    <div style="font-size:var(--fs-xs);color:var(--text-muted);">${item.color} - ${item.size}</div>
+                    <div style="font-size:var(--fs-sm);font-weight:600;">${escapeHtml(item.product_name)}</div>
+                    <div style="font-size:var(--fs-xs);color:var(--text-muted);">${escapeHtml(item.color)} - ${escapeHtml(item.size)}</div>
                 </div>
                 <div style="display:flex;align-items:center;gap:var(--sp-2);">
                     <span class="font-bold" style="font-size:var(--fs-sm);">${item.stock} pcs</span>

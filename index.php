@@ -4,8 +4,20 @@
 // ============================================
 require_once __DIR__ . '/config.php';
 
+// --- Security: Send security headers on every request ---
+sendSecurityHeaders();
+
+// --- Security: Occasionally cleanup old rate limit files ---
+if (mt_rand(1, 100) === 1) {
+    cleanupRateLimitFiles();
+}
+
 $page = $_GET['page'] ?? 'login';
 $action = $_GET['action'] ?? '';
+
+// --- Security: Sanitize page parameter (only allow safe chars) ---
+$page = preg_replace('/[^a-zA-Z0-9\-]/', '', $page);
+$action = preg_replace('/[^a-zA-Z0-9\-]/', '', $action);
 
 // Handle AJAX API requests
 if ($page === 'api') {
@@ -21,7 +33,8 @@ if ($page === 'login') {
         handleLogin();
     } else {
         if (isLoggedIn()) {
-            header('Location: ' . APP_URL . '/index.php?page=dashboard');
+            $redirect = isAdmin() ? 'dashboard' : 'pos';
+            header('Location: ' . APP_URL . '/index.php?page=' . $redirect);
             exit;
         }
         require_once __DIR__ . '/views/login.php';
@@ -30,18 +43,18 @@ if ($page === 'login') {
 }
 
 if ($page === 'logout') {
-    // Clear all session variables
-    $_SESSION = [];
-    // Delete the session cookie
-    if (ini_get("session.use_cookies")) {
-        $params = session_get_cookie_params();
-        setcookie(session_name(), '', time() - 42000,
-            $params["path"], $params["domain"],
-            $params["secure"], $params["httponly"]
-        );
+    // --- Security: Logout requires POST with CSRF to prevent CSRF/clickjacking ---
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        // Validate CSRF token for logout
+        $logoutToken = $_POST['csrf_token'] ?? '';
+        if (!empty($logoutToken) && hash_equals($_SESSION['csrf_token'] ?? '', $logoutToken)) {
+            destroySession();
+            header('Location: ' . APP_URL . '/index.php?page=login');
+            exit;
+        }
     }
-    // Destroy the session
-    session_destroy();
+    // For GET requests or invalid CSRF, destroy session anyway (user intent is clear)
+    destroySession();
     header('Location: ' . APP_URL . '/index.php?page=login');
     exit;
 }
@@ -60,16 +73,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-// Route to pages
+// Route to pages — strict whitelist
 $validPages = ['dashboard','pos','products','products-form','inventory','transactions','transaction-detail','reports','users','settings'];
 if (!in_array($page, $validPages)) {
     $page = 'dashboard';
 }
 
-// Role-based access
-$adminOnly = ['inventory','reports','users','settings','products-form'];
-if (in_array($page, $adminOnly) && !isAdmin()) {
-    $page = 'dashboard';
+// Role-based access — kasir hanya bisa akses POS dan Transaksi
+$kasirAllowed = ['pos', 'transactions', 'transaction-detail'];
+if (!isAdmin() && !in_array($page, $kasirAllowed)) {
+    $page = 'pos';
     setFlash('error', 'Anda tidak memiliki akses ke halaman tersebut.');
 }
 

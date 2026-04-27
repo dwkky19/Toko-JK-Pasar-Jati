@@ -6,8 +6,8 @@
     <title>Point of Sale — Toko JK Pasar Jati</title>
     <link rel="stylesheet" href="<?= APP_URL ?>/assets/css/app.css?v=<?= time() ?>">
     <link rel="stylesheet" href="<?= APP_URL ?>/assets/css/pos.css?v=<?= time() ?>">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.jsdelivr.net/npm/lucide@0.344.0/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.344.0/dist/umd/lucide.min.js" crossorigin="anonymous"></script>
 </head>
 <body>
 <?php $user = currentUser(); $db = getDB(); $categories = $db->query("SELECT * FROM categories ORDER BY name")->fetchAll(); ?>
@@ -15,7 +15,7 @@
 <div class="pos-layout">
     <div class="pos-header">
         <div class="pos-header-left">
-            <a href="<?= APP_URL ?>/index.php?page=dashboard" class="pos-back">
+            <a href="<?= APP_URL ?>/index.php?page=<?= isAdmin() ? 'dashboard' : 'transactions' ?>" class="pos-back">
                 <i data-lucide="arrow-left" style="width:16px;height:16px;"></i>
                 Kembali
             </a>
@@ -173,6 +173,7 @@
 
 <script>
 const APP = '<?= APP_URL ?>';
+let csrfToken = <?= json_encode(getCSRFToken()) ?>;
 let products = [];
 let cart = [];
 let selectedVariant = null;
@@ -181,6 +182,14 @@ let discountType = 'percent';
 let paymentMethod = 'cash';
 let lastTransaction = null;
 let lastCartItems = [];
+
+// Security: Escape HTML to prevent XSS
+function escapeHtml(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
 
 function formatRp(n) { return 'Rp ' + Number(n).toLocaleString('id-ID'); }
 
@@ -215,15 +224,16 @@ function renderProducts() {
     }
     grid.innerHTML = products.map(p => {
         const outOfStock = (p.total_stock || 0) <= 0;
-        const imgSrc = p.image ? `${APP}/uploads/products/${p.image}` : '';
-        const kodeBarang = p.kode_barang || '-';
-        return `<div class="product-card ${outOfStock ? 'out-of-stock' : ''}" onclick="openVariantModal(${p.id}, '${p.name.replace(/'/g, "\\'")}', ${p.sell_price})">
-            <div class="product-card-img">${imgSrc ? `<img src="${imgSrc}" alt="${p.name}" loading="lazy">` : '👕'}</div>
+        const imgSrc = p.image ? `${APP}/uploads/products/${escapeHtml(p.image)}` : '';
+        const kodeBarang = escapeHtml(p.kode_barang) || '-';
+        const safeName = escapeHtml(p.name);
+        return `<div class="product-card ${outOfStock ? 'out-of-stock' : ''}" onclick="openVariantModal(${parseInt(p.id)}, this)" data-name="${safeName}" data-price="${parseFloat(p.sell_price)}">
+            <div class="product-card-img">${imgSrc ? `<img src="${imgSrc}" alt="${safeName}" loading="lazy">` : '👕'}</div>
             <div class="product-card-info">
                 <div class="product-card-code" style="font-size:var(--fs-xs);color:var(--text-muted);font-family:monospace;">${kodeBarang}</div>
-                <div class="product-card-name">${p.name}</div>
+                <div class="product-card-name">${safeName}</div>
                 <div class="product-card-price">${formatRp(p.sell_price)}</div>
-                <div class="product-card-stock">${outOfStock ? '⛔ Habis' : 'Stok: ' + p.total_stock}</div>
+                <div class="product-card-stock">${outOfStock ? '⛔ Habis' : 'Stok: ' + parseInt(p.total_stock)}</div>
             </div>
         </div>`;
     }).join('');
@@ -249,8 +259,10 @@ document.getElementById('searchInput').addEventListener('input', function() {
 });
 
 // Variant modal
-async function openVariantModal(productId, productName, sellPrice) {
-    selectedProduct = { id: productId, name: productName, price: sellPrice };
+async function openVariantModal(productId, el) {
+    const productName = el.dataset.name;
+    const sellPrice = parseFloat(el.dataset.price);
+    selectedProduct = { id: parseInt(productId), name: productName, price: sellPrice };
     selectedVariant = null;
     document.getElementById('variantProductName').textContent = productName;
     document.getElementById('addToCartBtn').disabled = true;
@@ -269,13 +281,13 @@ async function openVariantModal(productId, productName, sellPrice) {
         for (const [color, sizes] of Object.entries(colors)) {
             html += `<div style="margin-bottom:var(--sp-4);">
                 <div style="font-size:var(--fs-sm);font-weight:600;margin-bottom:var(--sp-2);display:flex;align-items:center;gap:var(--sp-2);">
-                    <span class="color-dot" style="background:${getColorHex(color)}"></span> ${color}
+                    <span class="color-dot" style="background:${getColorHex(color)}"></span> ${escapeHtml(color)}
                 </div>
                 <div class="variant-grid">
                     ${sizes.map(s => `<button class="variant-btn ${s.stock <= 0 ? 'disabled' : ''}" 
-                        data-id="${s.id}" data-stock="${s.stock}" data-size="${s.size}" data-color="${s.color}" data-sku="${s.sku}"
+                        data-id="${parseInt(s.id)}" data-stock="${parseInt(s.stock)}" data-size="${escapeHtml(s.size)}" data-color="${escapeHtml(s.color)}" data-sku="${escapeHtml(s.sku)}"
                         onclick="selectVariant(this)" ${s.stock <= 0 ? 'disabled' : ''}>
-                        ${s.size}<span class="variant-stock">${s.stock} pcs</span>
+                        ${escapeHtml(s.size)}<span class="variant-stock">${parseInt(s.stock)} pcs</span>
                     </button>`).join('')}
                 </div>
             </div>`;
@@ -342,15 +354,15 @@ function renderCart() {
     }
     container.innerHTML = cart.map((item, i) => `<div class="cart-item">
         <div class="cart-item-info">
-            <div class="cart-item-name">${item.product_name}</div>
-            <div class="cart-item-variant">${item.variant_info}</div>
+            <div class="cart-item-name">${escapeHtml(item.product_name)}</div>
+            <div class="cart-item-variant">${escapeHtml(item.variant_info)}</div>
             <div class="cart-item-price">${formatRp(item.price * item.qty)}</div>
         </div>
         <div class="cart-item-actions">
-            <button class="qty-btn" onclick="changeQty(${i},-1)">−</button>
-            <span class="cart-item-qty">${item.qty}</span>
-            <button class="qty-btn" onclick="changeQty(${i},1)">+</button>
-            <button class="cart-item-remove" onclick="removeItem(${i})">
+            <button class="qty-btn" onclick="changeQty(${parseInt(i)},-1)">−</button>
+            <span class="cart-item-qty">${parseInt(item.qty)}</span>
+            <button class="qty-btn" onclick="changeQty(${parseInt(i)},1)">+</button>
+            <button class="cart-item-remove" onclick="removeItem(${parseInt(i)})">
                 <i data-lucide="trash-2" style="width:16px;height:16px;"></i>
             </button>
         </div>
@@ -479,9 +491,12 @@ async function processPayment() {
     try {
         const res = await fetch(`${APP}/index.php?page=api&action=checkout`, {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
+            },
             body: JSON.stringify({
-                items: cart.map(c => ({variant_id: c.variant_id, qty: c.qty})),
+                items: cart.map(c => ({variant_id: parseInt(c.variant_id), qty: parseInt(c.qty)})),
                 discount_type: discountVal > 0 ? discountType : null,
                 discount_value: discountVal,
                 payment_method: paymentMethod,
@@ -489,6 +504,9 @@ async function processPayment() {
             }),
         });
         const data = await res.json();
+
+        // Update CSRF token for next request
+        if (data.csrf_token) { csrfToken = data.csrf_token; }
 
         if (data.error) {
             Swal.fire({ icon:'error', title:'Gagal', text:data.error, background:'#FFFFFF', color:'#1E293B', confirmButtonColor:'#6366F1' });
@@ -517,7 +535,7 @@ function showSuccess(data) {
     let html = `<div style="background:var(--bg-elevated);border-radius:var(--radius-md);padding:var(--sp-4);border:1px solid var(--border);">`;
     cart.forEach(item => {
         html += `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:var(--fs-sm);">
-            <span style="color:var(--text-secondary);">${item.product_name} (${item.variant_info}) x${item.qty}</span>
+            <span style="color:var(--text-secondary);">${escapeHtml(item.product_name)} (${escapeHtml(item.variant_info)}) x${parseInt(item.qty)}</span>
             <span>${formatRp(item.price * item.qty)}</span>
         </div>`;
     });
@@ -553,13 +571,13 @@ function printReceipt() {
         .center{text-align:center;} .line{border-top:1px dashed #000;margin:8px 0;}
         .row{display:flex;justify-content:space-between;} .bold{font-weight:bold;}
     </style></head><body>
-    <div class="center"><h3>${store.store_name || 'Toko JK Pasar Jati'}</h3><p>${store.store_address || ''}</p><p>${store.store_phone || ''}</p></div>
+    <div class="center"><h3>${escapeHtml(store.store_name || 'Toko JK Pasar Jati')}</h3><p>${escapeHtml(store.store_address || '')}</p><p>${escapeHtml(store.store_phone || '')}</p></div>
     <div class="line"></div>
-    <p>${tx.invoice}<br>${tx.date}<br>Kasir: ${tx.cashier}</p>
+    <p>${escapeHtml(tx.invoice)}<br>${escapeHtml(tx.date)}<br>Kasir: ${escapeHtml(tx.cashier)}</p>
     <div class="line"></div>`;
     receiptItems.forEach(item => {
-        receipt += `<div class="row"><span>${item.product_name}</span></div>
-        <div class="row"><span>&nbsp; ${item.variant_info} x${item.qty}</span><span>${formatRp(item.price * item.qty)}</span></div>`;
+        receipt += `<div class="row"><span>${escapeHtml(item.product_name)}</span></div>
+        <div class="row"><span>&nbsp; ${escapeHtml(item.variant_info)} x${parseInt(item.qty)}</span><span>${formatRp(item.price * item.qty)}</span></div>`;
     });
     receipt += `<div class="line"></div>`;
     if (tx.discount_amount > 0) receipt += `<div class="row"><span>Diskon</span><span>-${formatRp(tx.discount_amount)}</span></div>`;
@@ -567,7 +585,7 @@ function printReceipt() {
     const ml = {cash:'Tunai',qris:'QRIS',transfer:'Transfer'}[tx.payment_method];
     receipt += `<div class="row"><span>Bayar (${ml})</span><span>${formatRp(tx.payment_amount)}</span></div>`;
     if (tx.change_amount > 0) receipt += `<div class="row"><span>Kembali</span><span>${formatRp(tx.change_amount)}</span></div>`;
-    receipt += `<div class="line"></div><p class="center">${store.receipt_footer || 'Terima kasih!'}</p></body></html>`;
+    receipt += `<div class="line"></div><p class="center">${escapeHtml(store.receipt_footer || 'Terima kasih!')}</p></body></html>`;
 
     const win = window.open('', '_blank', 'width=320,height=600');
     win.document.write(receipt);

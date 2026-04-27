@@ -41,7 +41,7 @@ foreach ($stmt->fetchAll() as $s) $settings[$s['setting_key']] = $s['setting_val
             <div class="user-avatar" style="width:56px;height:56px;font-size:var(--fs-xl);"><?= strtoupper(substr(currentUser()['name'], 0, 1)) ?></div>
             <div>
                 <div class="font-bold" style="font-size:var(--fs-md);"><?= htmlspecialchars(currentUser()['name']) ?></div>
-                <div class="text-secondary"><?= currentUser()['username'] ?> — <?= ucfirst(currentUser()['role']) ?></div>
+                <div class="text-secondary"><?= e(currentUser()['username']) ?> — <?= ucfirst(e(currentUser()['role'])) ?></div>
             </div>
         </div>
         <p class="text-sm text-muted">Untuk mengubah password, gunakan menu Pengguna.</p>
