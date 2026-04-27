@@ -1,0 +1,37 @@
+# ============================================
+# .gitignore - Toko JK Pasar Jati POS
+# ============================================
+
+# Uploaded Files (Abaikan semua file yang diupload pengguna)
+# Tetap simpan folder uploads/ dan file keamanannya (.htaccess)
+/uploads/*
+!/uploads/.htaccess
+!/uploads/products/
+/uploads/products/*
+!/uploads/products/.gitkeep
+
+# OS generated files (File sistem operasi Windows/Mac)
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# IDEs and Editor files (Konfigurasi editor code)
+.vscode/
+.idea/
+*.swp
+*.swo
+*.bak
+*~
+
+# Log files
+*.log
+error_log
+
+# Rate limiting temporary files
+/ratelimit/
+*ratelimit*
